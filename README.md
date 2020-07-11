@@ -2,7 +2,9 @@
 
 Repo for planning &amp; voting on which stats to study
 
-Please vote on the [proposed stats](https://github.com/LeaVerou/css-almanac/labels/proposed%20stat) you would like to see explored with a 👍
+Please [vote](https://leaverou.github.io/mavoice/?repo=leaverou/css-almanac&labels=proposed%20stat) on the [proposed stats](https://github.com/LeaVerou/css-almanac/labels/proposed%20stat) you would like to see explored with a 👍 or [use MaVoice](https://leaverou.github.io/mavoice/?repo=leaverou/css-almanac&labels=proposed%20stat).
+
+Please try to restrict your votes to your favorite metrics and don’t vote on every single proposal.
 
 ## Useful links
 
