@@ -6,7 +6,7 @@ Please [vote](https://leaverou.github.io/mavoice/?repo=leaverou/css-almanac&labe
 
 * Please try to restrict your votes to your favorite metrics and don’t vote on every single proposal. Roughly, avoid voting for more than 7-8 proposals. It's ok to remove your vote from one proposal to vote for another one.
 * Please note that votes are non-binding, we may still decide to calculate a stat that has few votes. 
-* Please note that these proposals have not yet been evaluated for feasbility. Not every statistic can be studied with the HTTPArchive corpus. It is possible that a proposal may have many votes, but turn out to be infeasible in its proposed form.
+* Please note that these proposals have not yet been evaluated for feasibility. Not every statistic can be studied with the HTTPArchive corpus. It is possible that a proposal may have many votes, but turn out to be infeasible in its proposed form.
 
 ## Useful links
 
