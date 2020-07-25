@@ -20,8 +20,11 @@
 import walkRules from "../rework-utils/walkRules.js";
 (async () => {
 
-const cssURL = "https://lea.verou.me/wp-content/themes/lv2020/style.css";
-let response = await fetch('https://cors-anywhere.herokuapp.com/' + cssURL);
+const PARAMS = new URL(location).searchParams;
+const CSS_URL = PARAMS.get("url") ?? "https://lea.verou.me/wp-content/themes/lv2020/style.css";
+const LIMIT = +PARAMS.get("limit") || 1;
+
+let response = await fetch('https://cors-anywhere.herokuapp.com/' + CSS_URL);
 let css = await response.text();
 let ast = parse(css);
 
@@ -54,7 +57,7 @@ for (let prop in usedTogether) {
 
 	// Remove properties that are only used together once
 	for (let p in obj) {
-		if (obj[p] === 1) {
+		if (obj[p] <= LIMIT) {
 			delete obj[p];
 		}
 	}
