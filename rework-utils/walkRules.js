@@ -1,4 +1,4 @@
-// Recursively walk all rules with selectors
+// Recursively walk all "normal" rules, i.e. rules with selectors
 export default function walkRules(rules, callback) {
 	if (!rules) {
 		return;
