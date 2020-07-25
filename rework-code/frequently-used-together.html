@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Properties frequently used together</title>
+	<style>
+		pre {
+			padding: 0 1em;
+			tab-size: 2;
+			font: 80%/1.4 Consolas, Monaco, monospace;
+		}
+	</style>
+</head>
+<body>
+
+<pre id="output"></pre>
+
+<script src="https://cdn.httparchive.org/lib/parse-css.js"></script>
+<script type="module">
+import walkRules from "../rework-utils/walkRules.js";
+(async () => {
+
+const cssURL = "https://lea.verou.me/wp-content/themes/lv2020/style.css";
+let response = await fetch('https://cors-anywhere.herokuapp.com/' + cssURL);
+let css = await response.text();
+let ast = parse(css);
+
+let usedTogether = {};
+
+walkRules(ast.stylesheet.rules, rule => {
+	let props = new Set();
+	for (let d of rule.declarations) {
+		props.add(d.property)
+	}
+
+	for (let prop of props) {
+		usedTogether[prop] = usedTogether[prop] || {};
+
+		for (let prop2 of props) {
+			if (prop === prop2) {
+				continue;
+			}
+
+			usedTogether[prop][prop2] = usedTogether[prop][prop2] || 0;
+			usedTogether[prop][prop2]++;
+		}
+	}
+
+});
+
+// Now sort by usage count
+for (let prop in usedTogether) {
+	let obj = usedTogether[prop];
+
+	// Remove properties that are only used together once
+	for (let p in obj) {
+		if (obj[p] === 1) {
+			delete obj[p];
+		}
+	}
+
+	let sortedEntries = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+
+	if (sortedEntries.length > 0) {
+		usedTogether[prop] = Object.fromEntries(sortedEntries);
+	}
+	else {
+		delete usedTogether[prop];
+	}
+}
+
+output.textContent = JSON.stringify(usedTogether, null, "\t");
+
+})();
+</script>
+</body>
+</html>
