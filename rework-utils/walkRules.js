@@ -1,11 +1,11 @@
 // Recursively walk all "normal" rules, i.e. rules with selectors
-export default function walkRules(rules, callback) {
+export default function walkRules(rules, callback, test = () => true) {
 	if (!rules) {
 		return;
 	}
 
 	for (let rule of rules) {
-		if (rule.type === "rule" && rule.selectors && rule.declarations) {
+		if (test(rule)) {
 			callback(rule);
 		}
 

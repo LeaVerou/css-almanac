@@ -49,7 +49,7 @@ walkRules(ast.stylesheet.rules, rule => {
 		}
 	}
 
-});
+}, rule => rule.type === "rule" && rule.selectors && rule.declarations);
 
 // Now sort by usage count
 for (let prop in usedTogether) {
