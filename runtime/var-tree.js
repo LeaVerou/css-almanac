@@ -17,7 +17,8 @@ function extractValueProperties(value) {
 }
 
 let visited = new Set();
-// Recursively walk a stylesheet
+
+// Recursively walk a CSSStyleRule or CSSStyleDeclaration
 function walkRule(rule, ret) {
 	if (!rule || visited.has(rule)) {
 		return;
@@ -25,20 +26,30 @@ function walkRule(rule, ret) {
 
 	visited.add(rule);
 
-	if (rule instanceof CSSStyleRule && rule.style && rule.styleMap) {
+	let style, selector;
+
+	if (rule instanceof CSSStyleRule && rule.style) {
+		style = rule.style;
+		selector = rule.selectorText;
+	}
+	else if (rule instanceof CSSStyleDeclaration) {
+		style = rule;
+		selector = "";
+	}
+
+	if (style) {
 		let condition;
-		let selector = rule.selectorText;
 		// mirror properties to add. We add them afterwards, so we don't pointlessly traverse them
 		let additions = {};
 
-		for (let [property, [originalValue]] of rule.styleMap) {
-			let value = originalValue + "";
+		for (let property of style) {
+			let value = style.getPropertyValue(property);
 
 			let containsRef = value.indexOf("var(--") > -1;
 			let setsVar = property.indexOf("--") === 0 && property.indexOf("--" + PREFIX) === -1;
 
 			if (containsRef || setsVar) {
-				if (!condition) {
+				if (!condition && rule.parentRule) {
 					condition = [];
 					let r = rule;
 
@@ -69,15 +80,17 @@ function walkRule(rule, ret) {
 				}
 
 				// Add class so we can find these later
-				for (let el of document.querySelectorAll(selector)) {
-					el.classList.add(`${PREFIX}element`);
+				if (selector) {
+					for (let el of document.querySelectorAll(selector)) {
+						el.classList.add(`${PREFIX}element`);
+					}
 				}
 			}
 		}
 
 		// Now that we're done, add the mirror properties
 		for (let property in additions) {
-			rule.style.setProperty(property, additions[property]);
+			style.setProperty(property, additions[property]);
 		}
 	}
 
@@ -169,7 +182,7 @@ function extractVars(cs, parentCS) {
 
 				// If value is of another type, we have Houdini P&V usage!
 				if (!(originalValue instanceof CSSUnparsedValue)) {
-					norefs[property].type = Object.prototype.toString.call(originalValue);
+					norefs[property].type = Object.prototype.toString.call(originalValue).slice(8, -1);
 				}
 			}
 		}
@@ -201,6 +214,11 @@ for (let stylesheet of document.styleSheets) {
 			walkRule(rule, summary);
 		}
 	}
+}
+
+// Do the same thing with inline styles
+for (let element of document.querySelectorAll('[style*="--"]')) {
+	walkRule(element.style, summary);
 }
 
 let computed = buildGraph();
