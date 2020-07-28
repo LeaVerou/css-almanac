@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		:root {
+			--foo: 1;
+		}
+
+		body {
+			--bar: red;
+			--yolo: var(--foo) 50;
+			--number: 2;
+			background-color: hsl(var(--bar) 50% 90%);
+		}
+
+		@media (min-width: 600px) and (min-height: 400px) {
+			body {
+				--bar: orange;
+			}
+
+			@supports (display: foobar) {
+				body {
+					background: hsl(var(--foo), 50%, 90%);
+				}
+			}
+		}
+
+		@supports (display: foobar) {
+			html {
+				background: hsl(var(--foo), 50%, 50%);
+			}
+		}
+	</style>
+
+</head>
+<body>
+
+<p style="--bar: 5">Test test</p>
+
+<script src="var-tree.js"></script>
+<script>
+CSS.registerProperty({
+	name: "--number",
+	syntax: "<number>",
+	inherits: false,
+	initialValue: 0
+})
+
+
+
+</script>
+</body>
+</html>
