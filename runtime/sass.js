@@ -170,6 +170,7 @@ function analyzeSCSS(scss, ret) {
 		ret.variablesCombined["--" + name] = value;
 	});
 
+	// Heuristic for nesting &
 	ret.nested = {
 		"descendant": scss.match(/&\s+(?=[\w[.:#])/g)?.length,
 		">": scss.match(/&\s*(?=>)/g)?.length,
