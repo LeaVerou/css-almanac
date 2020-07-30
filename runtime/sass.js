@@ -1,4 +1,4 @@
-// [sass]
+//[sass]
 const SassFunctions = [
 	// Color
 	"color.adjust", "adjust-color",
@@ -57,7 +57,7 @@ const SassFunctions = [
 	"if"
 ];
 
-const sortObject = obj => Object.fromEntries(Object.entries(obj).sort((a, b) => b[1] - a[1]));
+const sortObject = (obj, f = x => x) => Object.fromEntries(Object.entries(obj).sort((a, b) => f(b[1]) - f(a[1])));
 
 function analyzeSCSS(scss, ret) {
 	if (!scss) {
@@ -88,14 +88,15 @@ function analyzeSCSS(scss, ret) {
 			calls: scss.match(RegExp("@include\\s+" + name + "\\b", "gi"))?.length
 		};
 	});
+	ret.mixins = sortObject(ret.mixins, o => o.calls);
 
 	// Custom functions
 	ret.functions = {};
 	let lastName; // used to track down the nearest @return after a @function
 	scss.replace(/@function\s+([\w-]+)(?:\((.+?)\))?|@return (.+)/g, ($0, name, args, returnValue) => {
 		if ($0.indexOf("@return") === 0 && lastName) {
-			ret.functions[lastName].return = returnValue;
-			lastName = undefined;
+			ret.functions[lastName].returns = ret.functions[lastName].returns || [];
+			ret.functions[lastName].returns.push(returnValue);
 			return $0;
 		}
 
@@ -106,6 +107,7 @@ function analyzeSCSS(scss, ret) {
 			calls: scss.match(RegExp("\\b" + name + "\\(", "gi"))?.length
 		};
 	});
+	ret.functions = sortObject(ret.functions, o => o.calls);
 
 	// TODO Measure usage of Sass functions
 	ret.functionCalls = {};
@@ -165,9 +167,13 @@ function analyzeSCSS(scss, ret) {
 	ret.errors = scss.match(/@error (.+)/g)?.map(e => e.slice(7));
 
 	// CSS variables that are set with Sass variables
-	ret.variablesCombined = {};
-	scss.replace(/(?<=^|\s)--([\w-]+):\s*(.*#\{.*\$.+\}.*)\s*$/gm, ($0, name, value) => {
-		ret.variablesCombined["--" + name] = value;
+	// Note that this will fail on multiline values (it will return the first line only)
+	ret.variablesCombined = {value: {}, name: {}};
+	scss.replace(/(?<=^|\s)--([\w-]+):\s*(.*#\{.+\}.*)\s*$/gm, ($0, name, value) => {
+		ret.variablesCombined.value["--" + name] = value;
+	});
+	scss.replace(/(?<=^|\s)--([\w-]*#\{.+?\}[\w-]*):\s*(.+?)(?=;|$)/gm, ($0, name, value) => {
+		ret.variablesCombined.name["--" + name] = value;
 	});
 
 	// Heuristic for nesting &
