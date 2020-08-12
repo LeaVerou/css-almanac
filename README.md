@@ -14,3 +14,5 @@ Please [vote](https://leaverou.github.io/mavoice/?repo=leaverou/css-almanac&labe
 - [CSS 2020 Planning issue](https://github.com/HTTPArchive/almanac.httparchive.org/issues/898)
 - [2019 CSS Chapter](https://almanac.httparchive.org/en/2019/css)
 - [Methodology](https://almanac.httparchive.org/en/2019/methodology)
+- [Rework AST playground with inline CSS](https://codepen.io/leaverou/pen/PoZVeeE) - [use as template](https://codepen.io/pen/?template=PoZVeeE)
+- [Rework AST playground with remote CSS](https://codepen.io/leaverou/pen/ExPMJYd) - [use as template](https://codepen.io/pen/?template=ExPMJYd)
