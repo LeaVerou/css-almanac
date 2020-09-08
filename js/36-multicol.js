@@ -1,2 +1,4 @@
-let props = countProperties(ast.stylesheet.rules, {propeties: /^column[s-]/});
-let usesMulticol = Object.keys(props).length > 0;
+export default function compute() {
+	let props = countProperties(ast.stylesheet.rules, {propeties: /^column[s-]/});
+	return Object.keys(props).length > 0;
+}

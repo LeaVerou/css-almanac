@@ -1,6 +1,8 @@
+export default function compute() {
+
 let usage = {
 	hex: {},
-	functions: {}
+	functions: {},
 	keywords: {},
 	args: {commas: 0, nocommas: 0},
 	spaces: {},
@@ -34,6 +36,11 @@ function countMatches(haystack, needle) {
 		return r;
 	});
 	return ret;
+}
+
+function inSRGBGamut(space, coords) {
+	// TODO implement this
+	return true;
 }
 
 walkDeclarations(ast, ({property, value}) => {
@@ -76,7 +83,6 @@ walkDeclarations(ast, ({property, value}) => {
 	properties: /color$|^border|^background(-image)?$|\-shadow$|filter$/
 });
 
-function inSRGBGamut(space, coords) {
-	// TODO implement this
-	return true;
+return usage;
+
 }
