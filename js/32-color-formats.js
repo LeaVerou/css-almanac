@@ -26,7 +26,7 @@ const keywords = [
 
 // Lookbehind to prevent matching on e.g. var(--color-red)
 const keywordRegex = RegExp(`\\b(?<!\-)(?:${keywords.join("|")})\\b`, "gi");
-const functionNameRegex = /(?<name>rgba?|hsla?|color|lab|lch|hwb)\\(/gi;
+const functionNameRegex = /(?<name>rgba?|hsla?|color|lab|lch|hwb)\(/gi;
 
 function countMatches(haystack, needle) {
 	let ret = 0;
@@ -57,7 +57,7 @@ walkDeclarations(ast, ({property, value}) => {
 		let args = parsel.gobbleParens(value, index).slice(1, -1).trim();
 
 		usage.functions[name] = (usage.functions[name] || 0) + 1;
-		usage[(args.indexOf(",") > -1? "" : "no") + "commas"]++;
+		usage.args[(args.indexOf(",") > -1? "" : "no") + "commas"]++;
 
 		if (name === "color") {
 			// Let's look at color() more closely
@@ -78,7 +78,7 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 	}
 
-	value.match(keywordRegex).forEach(k => usage.keywords[k] = (usage.keywords[k] || 0) + 1);
+	value.match(keywordRegex)?.forEach(k => usage.keywords[k] = (usage.keywords[k] || 0) + 1);
 }, {
 	properties: /color$|^border|^background(-image)?$|\-shadow$|filter$/
 });
