@@ -1,7 +1,10 @@
 export default function compute() {
 
 let usage = {
-	hex: {},
+	hex: {
+		"3": 0, "4": 0,
+		"6": 0, "8": 0
+	},
 	functions: {},
 	keywords: {},
 	args: {commas: 0, nocommas: 0},
@@ -26,7 +29,7 @@ const keywords = [
 
 // Lookbehind to prevent matching on e.g. var(--color-red)
 const keywordRegex = RegExp(`\\b(?<!\-)(?:${keywords.join("|")})\\b`, "gi");
-const functionNameRegex = /(?<name>rgba?|hsla?|color|lab|lch|hwb)\(/gi;
+const functionNameRegex = /\b(?<name>rgba?|hsla?|color|lab|lch|hwb)\(/gi;
 
 function countMatches(haystack, needle) {
 	let ret = 0;
@@ -44,17 +47,16 @@ function inSRGBGamut(space, coords) {
 }
 
 walkDeclarations(ast, ({property, value}) => {
-	usage.hex = {
-		"3": countMatches(value, /#[a-f0-9]{3}\b/gi),
-		"4": countMatches(value, /#[a-f0-9]{4}\b/gi),
-		"6": countMatches(value, /#[a-f0-9]{6}\b/gi),
-		"8": countMatches(value, /#[a-f0-9]{8}\b/gi)
-	};
+	usage.hex[3] += countMatches(value, /#[a-f0-9]{3}\b/gi);
+	usage.hex[4] += countMatches(value, /#[a-f0-9]{4}\b/gi);
+	usage.hex[6] += countMatches(value, /#[a-f0-9]{6}\b/gi);
+	usage.hex[8] += countMatches(value, /#[a-f0-9]{8}\b/gi);
 
 	for (let match of value.matchAll(functionNameRegex)) {
 		let {index, groups} = match;
 		let paren = index + match[0].length;
 		let args = parsel.gobbleParens(value, index).slice(1, -1).trim();
+		let name = match.groups.name;
 
 		usage.functions[name] = (usage.functions[name] || 0) + 1;
 		usage.args[(args.indexOf(",") > -1? "" : "no") + "commas"]++;
@@ -79,8 +81,9 @@ walkDeclarations(ast, ({property, value}) => {
 	}
 
 	value.match(keywordRegex)?.forEach(k => usage.keywords[k] = (usage.keywords[k] || 0) + 1);
+	usage.keywords = sortObject(usage.keywords);
 }, {
-	properties: /color$|^border|^background(-image)?$|\-shadow$|filter$/
+	properties: /^--|color$|^border|^background(-image)?$|\-shadow$|filter$/
 });
 
 return usage;
