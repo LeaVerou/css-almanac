@@ -1,6 +1,6 @@
 // How many instances of box-sizing:border-box are there?
 
-export default function compute() {
-  let props = countProperties(ast.stylesheet.rules, {properties: /box-sizing/, values: /border-box/});
-  return props['box-sizing']?.length || 0;
+export default function countBorderBoxDeclarations(ast) {
+  const declarations = countDeclarationsByProperty(ast.stylesheet.rules, {properties: /^(-(o|moz|webkit|ms)-)?box-sizing$/, values: 'border-box'});
+  return declarations['box-sizing'] || 0;
 }
