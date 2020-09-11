@@ -3,7 +3,6 @@ export default function compute() {
 	let ret = {};
 
 	walkRules(ast, rule => {
-		console.log(rule.media);
 		let features = rule.media
 							.replace(/\s+/g, "")
 							.match(/\([\w-]+(?=[:\)])/g)
@@ -11,7 +10,7 @@ export default function compute() {
 
 		if (features) {
 			for (let feature of features) {
-				ret[feature] = (ret[feature] || 0) + 1;
+				incrementByKey(ret, feature);
 			}
 		}
 	}, {rules: r => r.type === "media"});

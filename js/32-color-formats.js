@@ -56,8 +56,8 @@ walkDeclarations(ast, ({property, value}) => {
 	for (let f of extractFunctionCalls(value, {names: functionNames})) {
 		let {name, args} = f;
 
-		usage.functions[name] = (usage.functions[name] || 0) + 1;
-		usage.args[(args.indexOf(",") > -1? "" : "no") + "commas"]++;
+		incrementByKey(usage.functions, name);
+		incrementByKey(usage.args, (args.indexOf(",") > -1? "" : "no") + "commas");
 
 		if (name === "color") {
 			// Let's look at color() more closely
@@ -66,7 +66,7 @@ walkDeclarations(ast, ({property, value}) => {
 			if (g) {
 				let {space, params} = g;
 
-				usage.spaces[space] = (usage.spaces[space] || 0) + 1;
+				incrementByKey(usage.spaces, space);
 
 				if (/^[\d.+%\s]+$/.test(params)) {
 					let percents = params.indexOf("%") > -1;
@@ -78,7 +78,7 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 	}
 
-	value.match(keywordRegex)?.forEach(k => usage.keywords[k] = (usage.keywords[k] || 0) + 1);
+	value.match(keywordRegex)?.forEach(k => incrementByKey(usage.keywords, k));
 	usage.keywords = sortObject(usage.keywords);
 }, {
 	properties: /^--|color$|^border|^background(-image)?$|\-shadow$|filter$/

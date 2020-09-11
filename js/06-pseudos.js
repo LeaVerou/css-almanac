@@ -10,7 +10,7 @@ walkRules(ast, rule => {
 
 	for (let pseudo of pseudos) {
 		let type = "pseudo" + (pseudo.indexOf("::") === 0? "Els" : "Classes");
-		ret[type][pseudo] = (ret[type][pseudo] || 0) + 1;
+		incrementByKey(ret[type], pseudo);
 	}
 }, {rules: r => r.type === "rule"});
 

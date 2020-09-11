@@ -8,7 +8,7 @@ walkDeclarations(ast, ({property, value}) => {
 		let name = paint.args.match(/^[-\w+]+/)[0];
 
 		if (name) {
-			ret[name] = (ret[name] || 0) + 1;
+			incrementByKey(ret, name);
 		}
 	}
 }, {

@@ -29,10 +29,9 @@ walkDeclarations(ast, ({property, value}) => {
 	for (let gradient of extractFunctionCalls(value, {names: /-gradient$/})) {
 
 		let {name, args} = gradient;
-		ret.functions[name] = (ret.functions[name] || 0) + 1;
+		incrementByKey(ret.functions, name);
 
-		let propKey = property.indexOf("--") === 0? "--" : property;
-		ret.properties[propKey] = (ret.properties[propKey] || 0) + 1;
+		incrementByKey(ret.properties, property.indexOf("--") === 0? "--" : property);
 
 		// Light color stop parsing
 
