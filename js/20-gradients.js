@@ -91,7 +91,7 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 	}
 }, {
-	properties: /^--|^(?:background(-image)?$|list-style-image|border-image|content)$/
+	properties: /^--|-image$|^background$|^content$/
 });
 
 // Calculate average and max number of stops
