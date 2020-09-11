@@ -29,7 +29,7 @@ const keywords = [
 
 // Lookbehind to prevent matching on e.g. var(--color-red)
 const keywordRegex = RegExp(`\\b(?<!\-)(?:${keywords.join("|")})\\b`, "gi");
-const functionNameRegex = /\b(?<name>rgba?|hsla?|color|lab|lch|hwb)\(/gi;
+const functionNames = /^(?:rgba?|hsla?|color|lab|lch|hwb)$/gi;
 
 function countMatches(haystack, needle) {
 	let ret = 0;
@@ -42,7 +42,8 @@ function countMatches(haystack, needle) {
 }
 
 function inSRGBGamut(space, coords) {
-	// TODO implement this
+	// TODO convert to sRGB
+	// TODO check for values out of the 0-1 range
 	return true;
 }
 
@@ -52,11 +53,8 @@ walkDeclarations(ast, ({property, value}) => {
 	usage.hex[6] += countMatches(value, /#[a-f0-9]{6}\b/gi);
 	usage.hex[8] += countMatches(value, /#[a-f0-9]{8}\b/gi);
 
-	for (let match of value.matchAll(functionNameRegex)) {
-		let {index, groups} = match;
-		let paren = index + match[0].length;
-		let args = parsel.gobbleParens(value, index).slice(1, -1).trim();
-		let name = match.groups.name;
+	for (let f of extractFunctionCalls(value, {names: functionNames})) {
+		let {name, args} = f;
 
 		usage.functions[name] = (usage.functions[name] || 0) + 1;
 		usage.args[(args.indexOf(",") > -1? "" : "no") + "commas"]++;
