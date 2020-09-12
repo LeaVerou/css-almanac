@@ -13,7 +13,7 @@ export default function compute() {
 				incrementByKey(ret, feature);
 			}
 		}
-	}, {rules: r => r.type === "media"});
+	}, {type: "media"});
 
 	return ret;
 }

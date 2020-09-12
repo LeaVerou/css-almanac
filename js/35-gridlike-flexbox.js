@@ -11,5 +11,5 @@ export default function compute() {
 				return true; // break
 			}
 		}
-	}, {rules: r => r.type === "rule"}) || false;
+	}, {type: "rule"}) || false;
 }

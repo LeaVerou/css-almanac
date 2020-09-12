@@ -12,7 +12,7 @@ walkRules(ast, rule => {
 		let type = "pseudo" + (pseudo.indexOf("::") === 0? "Els" : "Classes");
 		incrementByKey(ret[type], pseudo);
 	}
-}, {rules: r => r.type === "rule"});
+}, {type: "rule"});
 
 ret.pseudoClasses = sortObject(ret.pseudoClasses);
 ret.pseudoEls = sortObject(ret.pseudoEls);
