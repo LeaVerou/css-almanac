@@ -18,15 +18,6 @@ function parseDuration(duration) {
 }
 
 walkDeclarations(ast, ({property, value}) => {
-	if (["inherit", "initial", "unset", "revert"].includes(value)) {
-		return;
-	}
-
-	if (value.indexOf("var(--") > -1) {
-		// Drop values with CSS variables, as we can't parse them meaningfully
-		return;
-	}
-
 	if (property === "transition-property") {
 		value.split(/\s*,\s*/).forEach(p => ret.properties.add(p));
 	}
@@ -71,7 +62,10 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 	}
 }, {
-	properties: /^(transition|animation)(?=$|-)/g
+	properties: /^(transition|animation)(?=$|-)/g,
+	not: {
+		values: ["inherit", "initial", "unset", "revert", /\bvar\(--/]
+	}
 })
 
 // Animation names
