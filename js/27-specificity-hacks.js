@@ -13,6 +13,33 @@ const bem = /^(?=.+--|.+__)[a-z0-9-]+(__[\w-]+)?(--[\w-]+)?$/i;
 
 walkSelectors(ast, selector => {
 	let sast = parsel.parse(selector, {list: false, recursive: false});
+	let tokens = parsel.tokenize(selector);
+
+	let first = tokens[0];
+
+	if (first.type === "pseudo-class" && first.name === "root") {
+		ret.root_descendant++;
+	}
+	else if (first.type === "type" && first.name === "html") {
+		ret.html_descendant++;
+	}
+	else if (first.type === "pseudo-class" && first.name === "not" && first.argument.startsWith("#")) {
+		ret.not_id_descendant++;
+	}
+
+	// Is it BEM?
+	// We only count "hardcore" BEM for this metric, with no nesting.
+	if (sast.type === "compound") {
+		// Only one BEM class, and pseudos
+		let nonPseudos = sast.list.filter(node => !node.type.startsWith("pseudo-"));
+
+		if (nonPseudos.length === 1 && nonPseudos[0].type === "class" && bem.test(nonPseudos[0].name)) {
+			ret.bem++;
+		}
+	}
+	else if (sast.type === "class" && bem.test(sast.name)) {
+		ret.bem++;
+	}
 
 	parsel.walk(sast, (node, parent) => {
 		if (node.type === "attribute" && node.name === "id" && node.operator === "=") {
@@ -34,31 +61,7 @@ walkSelectors(ast, selector => {
 				}
 			}
 		}
-		else if (!parent && node.type === "complex") {
-			let first = node;
-			// Find the firstmost compound
-			while ((first = first.left) && first.type === "complex");
-
-			if (first.combinator === " ") {
-				first = first.left;
-			}
-
-			if (first.type === "pseudo-class" && first.name === "root") {
-				ret.root_descendant++;
-			}
-			else if (first.type === "type" && first.name === "html") {
-				ret.html_descendant++;
-			}
-			else if (first.type === "pseudo-class" && first.name === "not" && first.argument.startsWith("#")) {
-				ret.not_id_descendant++;
-			}
-		}
-		else if (node.type === "class" && (!parent || parent.type === "complex" && parent.combinator === " ")) {
-			if (bem.test(node.name)) {
-				ret.bem++;
-			}
-		}
-	}, {subtree: true});
+	});
 });
 
 return ret;
