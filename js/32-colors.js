@@ -9,7 +9,7 @@ let usage = {
 	keywords: {},
 	args: {commas: 0, nocommas: 0},
 	spaces: {},
-	inSRGBGamut: {in: 0, out: 0}
+	p3: {sRGB_in: 0, sRGB_out: 0}
 };
 
 const keywords = [
@@ -41,7 +41,8 @@ function countMatches(haystack, needle) {
 	return ret;
 }
 
-function inSRGBGamut(space, coords) {
+// Is a P3 color within sRGB?
+function P3inSRGB(coords) {
 	// TODO convert to sRGB
 	// TODO check for values out of the 0-1 range
 	return true;
@@ -61,18 +62,18 @@ walkDeclarations(ast, ({property, value}) => {
 
 		if (name === "color") {
 			// Let's look at color() more closely
-			let g = args.match(/^(?<name>[\w-]+)\s+(?<params>.+)$/)?.groups;
+			let match = args.match(/^(?<space>[\w-]+)\s+(?<params>.+)$/);
 
-			if (g) {
-				let {space, params} = g;
+			if (match) {
+				let {space, params} = match.groups;
 
 				incrementByKey(usage.spaces, space);
 
-				if (/^[\d.+%\s]+$/.test(params)) {
+				if (/^[\d.+%\s]+$/.test(params) && space === "display-p3") {
 					let percents = params.indexOf("%") > -1;
 					let coords = params.trim().split(/\s+/).map(c => parseFloat(percents) / (percents? 100 : 1));
 
-					usage.inSRGBGamut[inSRGBGamut(space, coords)? "in" : "out"]++;
+					usage.p3["sRGB_" + (P3inSRGB(coords)? "in" : "out")]++;
 				}
 			}
 		}
