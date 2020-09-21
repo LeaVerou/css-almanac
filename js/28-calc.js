@@ -30,7 +30,7 @@ walkDeclarations(ast, ({property, value}) => {
 		incrementByKey(ret.number_of_parens, parens.length);
 
 		if (units.length === 0) {
-			ret.constants.add(value);
+			ret.constants.add(args);
 		}
 	}
 }, {
