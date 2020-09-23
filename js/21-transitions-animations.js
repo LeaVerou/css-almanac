@@ -2,8 +2,8 @@ export default function compute() {
 
 let ret = {
 	properties: new Set(),
-	animationNames: new Set(),
-	timingFunctions: {},
+	animation_names: new Set(),
+	timing_functions: {},
 
 	// to calculate avg, median etc in the SQL. All durations are normalized to ms.
 	durations: {}
@@ -30,7 +30,7 @@ walkDeclarations(ast, ({property, value}) => {
 				continue;
 			}
 
-			incrementByKey(ret.timingFunctions, name);
+			incrementByKey(ret.timing_functions, name);
 		}
 	}
 	else if (property.endsWith("-duration")) {
@@ -49,7 +49,7 @@ walkDeclarations(ast, ({property, value}) => {
 			}
 
 			if (easings.test(keyword)) {
-				incrementByKey(ret.timingFunctions, keyword);
+				incrementByKey(ret.timing_functions, keyword);
 			}
 			else if (property === "transition") {
 				ret.properties.add(keyword);
@@ -70,13 +70,13 @@ walkDeclarations(ast, ({property, value}) => {
 
 // Animation names
 walkRules(ast, rule => {
-	ret.animationNames.add(rule.name);
+	ret.animation_names.add(rule.name);
 }, {type: "keyframes"});
 
 ret.properties = [...new Set(ret.properties)];
-ret.animationNames = [...ret.animationNames];
+ret.animation_names = [...ret.animation_names];
 ret.durations = sortObject(ret.durations);
-ret.timingFunctions = sortObject(ret.timingFunctions);
+ret.timing_functions = sortObject(ret.timing_functions);
 
 return ret;
 

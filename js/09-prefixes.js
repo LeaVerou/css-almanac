@@ -1,7 +1,7 @@
 export default function compute() {
 	let ret = {
-		pseudoClasses: {},
-		pseudoEls: {},
+		pseudo_classes: {},
+		pseudo_elements: {},
 		properties: {},
 		functions: {},
 		keywords: {},
@@ -14,7 +14,7 @@ export default function compute() {
 			let pseudos = rule.selectors.flatMap(r => r.match(/::?-[a-z]+-[\w-]+/g) || []);
 
 			for (let pseudo of pseudos) {
-				let type = "pseudo" + (pseudo.indexOf("::") === 0? "Els" : "Classes");
+				let type = "pseudo_" + (pseudo.indexOf("::") === 0? "elements" : "classes");
 				incrementByKey(ret[type], pseudo);
 			}
 		}

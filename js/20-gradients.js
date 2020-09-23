@@ -3,9 +3,9 @@ export default function compute() {
 let ret = {
 	functions: {}, // usage by gradient function
 	properties: {}, // usage by property
-	twopos: 0,
+	two_positions: 0,
 	hints: 0,
-	hardStops: 0
+	hard_stops: 0
 };
 let stopCount = [];
 
@@ -66,7 +66,7 @@ walkDeclarations(ast, ({property, value}) => {
 			let s = stops[i];
 
 			if (s.pos.length > 1) {
-				ret.twopos++;
+				ret.two_positions++;
 			}
 
 			let prev = stops[i - 1];
@@ -75,12 +75,12 @@ walkDeclarations(ast, ({property, value}) => {
 			if (s.color && prev) {
 				// 1 position which is either 0 or the same as the previous one
 				if (s.pos.length === 1 && s.pos === prev.pos || parseFloat(s.pos) === 0) {
-					ret.hardStops++;
+					ret.hard_stops++;
 				}
 				// Two positions of which the first is 0 or the same as the last one
 				else if (s.pos.length === 2) {
 					if (parseFLoat(s.pos[0]) === 0 || prev.pos.length === 2 && s.pos[0] === prev.pos?.[1] || prev.pos.length === 1 && s.pos[0] === s.pos[0]) {
-						ret.hardStops++;
+						ret.hard_stops++;
 					}
 				}
 			}
@@ -94,8 +94,8 @@ walkDeclarations(ast, ({property, value}) => {
 });
 
 // Calculate average and max number of stops
-ret.maxStops = Math.max(...stopCount);
-ret.avgStops = stopCount.reduce((a, c) => a + c, 0) / stopCount.length;
+ret.max_stops = Math.max(...stopCount);
+ret.avg_stops = stopCount.reduce((a, c) => a + c, 0) / stopCount.length;
 
 return ret;
 

@@ -1,7 +1,7 @@
 export default function compute() {
 
 let ret = {
-	byProperty: {}
+	by_property: {}
 };
 
 const lengths = /(?<!-)\b(?<number>-?\d*\.?\d+)(?<unit>%|[a-z]{1,4}\b|(?=\s|$|,|\*|\/)\b)/gi;
@@ -9,26 +9,26 @@ const lengths = /(?<!-)\b(?<number>-?\d*\.?\d+)(?<unit>%|[a-z]{1,4}\b|(?=\s|$|,|
 walkDeclarations(ast, ({property, value}) => {
 	for (let length of value.matchAll(lengths)) {
 		let {number, unit} = length.groups;
-		ret.byProperty[property] = ret.byProperty[property] || {};
+		ret.by_property[property] = ret.by_property[property] || {};
 
 		if (unit) {
 			incrementByKey(ret, unit);
-			incrementByKey(ret.byProperty[property], unit);
+			incrementByKey(ret.by_property[property], unit);
 		}
 		else {
 			if (number === "0") {
 				// Unitless 0
 				incrementByKey(ret, "0");
-				incrementByKey(ret.byProperty[property], "0");
+				incrementByKey(ret.by_property[property], "0");
 			}
 			else {
 				incrementByKey(ret, "<number>");
-				incrementByKey(ret.byProperty[property], "<number>");
+				incrementByKey(ret.by_property[property], "<number>");
 			}
 		}
 
 		incrementByKey(ret, "total"); // for calculating %
-		incrementByKey(ret.byProperty[property], "total"); // for calculating %
+		incrementByKey(ret.by_property[property], "total"); // for calculating %
 	}
 }, {
 	// Properties that take one or more lengths
@@ -67,8 +67,8 @@ walkDeclarations(ast, ({property, value}) => {
 
 ret = sortObject(ret);
 
-for (let property in ret.byProperty) {
-	ret.byProperty[property] = sortObject(ret.byProperty[property]);
+for (let property in ret.by_property) {
+	ret.by_property[property] = sortObject(ret.by_property[property]);
 }
 
 return ret;
