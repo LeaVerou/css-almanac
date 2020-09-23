@@ -8,10 +8,10 @@ const MIN_TOTAL_FOR_DESCENT = 5;
 const MIN_PERCENT_FOR_DESCENT = .35;
 
 // Properties or combinations used this many times will be pruned
-const MAX_TOTAL_FOR_PRUNE = 2;
+const MAX_TOTAL_FOR_PRUNE = 3;
 
 // Child properties used in that many instances of the parent combination will be pruned
-const MAX_PERCENT_FOR_PRUNE = .2;
+const MAX_PERCENT_FOR_PRUNE = .15;
 
 let sets = [];
 let frequent = {};
@@ -62,10 +62,10 @@ function countProps(usage, sets, property, parent) {
 
 		let u = usage[prop];
 
-		if (u.total > 5 && (!usage.total || u.total > usage.total * .4)) {
+		if (u.total >= MIN_TOTAL_FOR_DESCENT && (!usage.total || u.total >= usage.total * MIN_PERCENT_FOR_DESCENT)) {
 			countProps(u, u[rules], prop, usage);
 		}
-		else if (u.total < 3 || u.total < usage.total * .2) {
+		else if (u.total <= MAX_TOTAL_FOR_PRUNE || u.total <= usage.total * MAX_PERCENT_FOR_PRUNE) {
 			delete usage[prop];
 		}
 	}
