@@ -1,18 +1,23 @@
 export default function compute() {
 
-// let properties = [];
-//
-// walkRules(ast, rule => {
-// 	properties.push(rule.declarations.map(d => d.property).sort());
-// }, {type: "rule"});
-//
-// let apriori = new Apriori.Algorithm(.15, .1);
-// let result = apriori.analyze(properties);
-// console.log(result.associationRules, result.frequentItemSets);
-// return result.map(a => { return {lhs: a.lhs, rhs: a.rhs}})
+// Total number of rules to descend and try to extend the subset by one
+const MIN_TOTAL_FOR_DESCENT = 5;
 
-let usedTogether = {};
-let rules = [];
+// Min % of rules child property appears in compared to parent combination to
+// try to extend the subset by one
+const MIN_PERCENT_FOR_DESCENT = .35;
+
+// Properties or combinations used this many times will be pruned
+const MAX_TOTAL_FOR_PRUNE = 2;
+
+// Child properties used in that many instances of the parent combination will be pruned
+const MAX_PERCENT_FOR_PRUNE = .2;
+
+let sets = [];
+let frequent = {};
+let allUsage = {};
+let rules = Symbol("rules");
+let totalRules = 0;
 
 walkRules(ast, rule => {
 	let ruleProps = rule.declarations
@@ -22,49 +27,77 @@ walkRules(ast, rule => {
 			.map(d => d.property);
 
 	let props = new Set(ruleProps);
-	rules.push(props);
-}, {rules: r => r.declarations});
+	sets.push(props);
+	totalRules++;
+}, {
+	rules: r => r.declarations,
+	not: {
+		type: "font-face"
+	}
+});
 
-for (let props of rules) {
-	for (let prop of props) {
-		usedTogether[prop] = usedTogether[prop] || {total: 0};
-		usedTogether[prop].total++;
+function countProps(usage, sets, property, parent) {
+	for (let rule of sets) {
+		for (let prop of rule) {
+			if (prop <= property) {
+				continue;
+			}
 
-		for (let prop2 of props) {
-			if (prop !== prop2) {
-				usedTogether[prop][prop2] = usedTogether[prop][prop2] || 0;
-				usedTogether[prop][prop2]++;
+			usage[prop] = usage[prop] || {total: 0, [rules]: []};
+			usage[prop].total++;
+
+			let p = new Set(rule);
+			p.delete(prop);
+
+			if (p.size > 0) {
+				usage[prop][rules].push(p);
 			}
 		}
 	}
-}
 
-
-for (let property in usedTogether) {
-	let obj = usedTogether[property];
-	let total = obj.total.length;
-
-	for (let prop in obj) {
+	for (let prop in usage) {
 		if (prop === "total") {
 			continue;
 		}
 
-		let f = obj[prop];
+		let u = usage[prop];
 
-		if (f < Math.max(3, obj.total * .15)) {
-			// Prune those appearing together in less than 15% of rules or in fewer than 3 rules
-			delete obj[prop];
+		if (u.total > 5 && (!usage.total || u.total > usage.total * .4)) {
+			countProps(u, u[rules], prop, usage);
 		}
-	}
-
-	if (Object.keys(obj).length <= 1) {
-		delete usedTogether[property];
-	}
-	else {
-		usedTogether[property] = sortObject(obj);
+		else if (u.total < 3 || u.total < usage.total * .2) {
+			delete usage[prop];
+		}
 	}
 }
 
-return usedTogether;
+function walkUsage(usage, properties = []) {
+	for (let property in usage) {
+		if (property === "total") {
+			continue;
+		}
+
+		let u = usage[property];
+		let path = [...properties, property];
+
+		if (path.length >= 2) {
+			frequent[path.join(", ")] = 100 * u.total / totalRules;
+		}
+
+		if (Object.keys(u).length <= 1) {
+			// Replace {total: N} with number
+			usage[property] = u.total;
+		}
+		else {
+			walkUsage(u, path);
+		}
+	}
+}
+
+countProps(allUsage, sets);
+walkUsage(allUsage);
+
+// return allUsage;
+return sortObject(frequent);
 
 }
