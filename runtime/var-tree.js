@@ -309,6 +309,6 @@ function serialize(data, separator) {
 	}, separator);
 }
 
-let data = analyzeVariables();
+// let data = analyzeVariables();
 
-console.log(serialize(data, "\t"));
+// console.log(serialize(data, "\t"));
