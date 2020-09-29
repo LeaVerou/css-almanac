@@ -18,7 +18,7 @@ walkRules(ast, rule => {
 		ss = ss.map((a, i) => a + s[i]);
 		let max = Math.max(...s);
 
-		incrementByKey(ret.specificityCount, max <= 5? s + "" : "higher");
+		incrementByKey(ret.specificityCount, s + "");
 
 		let base = Math.max(...ret.maxSpecifity, ...s);
 		if (parsel.specificityToNumber(s, base) > parsel.specificityToNumber(ret.maxSpecifity, base)) {
