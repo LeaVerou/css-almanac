@@ -7,6 +7,9 @@ let usage = {
 	},
 	functions: {},
 	keywords: {},
+	system: {},
+	currentcolor: 0,
+	transparent: 0,
 	args: {commas: 0, nocommas: 0},
 	spaces: {},
 	p3: {sRGB_in: 0, sRGB_out: 0}
@@ -24,11 +27,18 @@ const keywords = [
 	"olive","olivedrab","orange","orangered","orchid","palegoldenrod","palegreen","paleturquoise","palevioletred","papayawhip","peachpuff","peru","pink","plum",
 	"powderblue","purple","rebeccapurple","red","rosybrown","royalblue","saddlebrown","salmon","sandybrown","seagreen","seashell","sienna","silver","skyblue",
 	"slateblue","slategray","slategrey","snow","springgreen","steelblue","tan","teal","thistle","tomato","turquoise","violet","wheat","white","whitesmoke",
-	"yellow","yellowgreen","transparent","currentcolor"
+	"yellow","yellowgreen"
+];
+
+const system = [
+	"ActiveBorder", "ActiveCaption", "AppWorkspace", "Background", "ButtonFace", "ButtonHighlight", "ButtonShadow", "ButtonText", "CaptionText",
+	"GrayText", "Highlight", "HighlightText", "InactiveBorder", "InactiveCaption", "InactiveCaptionText", "InfoBackground", "InfoText",
+	"Menu", "MenuText", "Scrollbar", "ThreeDDarkShadow", "ThreeDFace", "ThreeDHighlight", "ThreeDLightShadow", "ThreeDShadow", "Window", "WindowFrame", "WindowText"
 ];
 
 // Lookbehind to prevent matching on e.g. var(--color-red)
 const keywordRegex = RegExp(`\\b(?<!\-)(?:${keywords.join("|")})\\b`, "gi");
+const systemRegex = RegExp(`\\b(?<!\-)(?:${system.join("|")})\\b`, "gi");
 const functionNames = /^(?:rgba?|hsla?|color|lab|lch|hwb)$/gi;
 
 function countMatches(haystack, needle) {
@@ -106,11 +116,23 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 	}
 
-	value.match(keywordRegex)?.forEach(k => incrementByKey(usage.keywords, k));
-	usage.keywords = sortObject(usage.keywords);
+	for (let match of value.matchAll(keywordRegex)) {
+		incrementByKey(usage.keywords, match[0]);
+	}
+
+	for (let match of value.matchAll(systemRegex)) {
+		incrementByKey(usage.system, match[0]);
+	}
+
+	for (let match of value.matchAll(/\b(?<!\-)(?:currentColor|transparent)\b/gi)) {
+		incrementByKey(usage, match[0].toLowerCase());
+	}
 }, {
 	properties: /^--|color$|^border|^background(-image)?$|\-shadow$|filter$/
 });
+
+usage.keywords = sortObject(usage.keywords);
+usage.system = sortObject(usage.system);
 
 return usage;
 
