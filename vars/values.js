@@ -21,12 +21,26 @@ let ret = {
 	properties: {}
 };
 
-const propertyTypes = {
-	"color": "color",
-	"width": "length",
-	"background-image": "image",
-	"content": "string"
-};
+const colorKeywords = [
+	"aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige", "bisque", "black", "blanchedalmond", "blue", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse",
+	"chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkgrey", "darkkhaki", "darkmagenta",
+	"darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet",
+	"deeppink", "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "fuchsia", "gainsboro", "ghostwhite", "gold", "goldenrod", "gray",
+	"green", "greenyellow", "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral",
+	"lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey",
+	"lightsteelblue", "lightyellow", "lime", "limegreen", "linen", "magenta", "maroon", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen",
+	"mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "navy", "oldlace",
+	"olive", "olivedrab", "orange", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum",
+	"powderblue", "purple", "rebeccapurple", "red", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "silver", "skyblue",
+	"slateblue", "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "teal", "thistle", "tomato", "turquoise", "violet", "wheat", "white", "whitesmoke",
+	"yellow", "yellowgreen",
+	"ActiveBorder", "ActiveCaption", "AppWorkspace", "Background", "ButtonFace", "ButtonHighlight", "ButtonShadow", "ButtonText", "CaptionText",
+	"GrayText", "Highlight", "HighlightText", "InactiveBorder", "InactiveCaption", "InactiveCaptionText", "InfoBackground", "InfoText",
+	"Menu", "MenuText", "Scrollbar", "ThreeDDarkShadow", "ThreeDFace", "ThreeDHighlight", "ThreeDLightShadow", "ThreeDShadow", "Window", "WindowFrame", "WindowText",
+	"transparent", "currentColor"
+];
+
+const colorKeywordRegex = RegExp(`^(?:${colorKeywords.join("|")})$`, "gi");
 
 walkElements(vars.computed, node => {
 	if (node.declarations) {
@@ -58,17 +72,38 @@ walkElements(vars.computed, node => {
 				// What type of value is it?
 				let type;
 
-				for (let property in propertyTypes) {
-					if (CSS.supports(property, value)) {
-						type = propertyTypes[property];
-						break;
+				let call = extractFunctionCalls(value).filter(c => c.pos[0] === 0 && c.pos[1] === value.length)[0];
+
+				if (call) {
+					let name = call.name;
+
+					if (/^(?:rgba?|hsla?|color|lab|lch|hwb)$/i.test(name)) {
+						type = "color";
+					}
+					else if (/^(rotate|skew|translate|matrix)(X|Y|Z)?$/.test(name)) {
+						type = "transform";
+					}
+					else if (/^(.+-gradient|url|cross-fade|image)$/.test(name)) {
+						type = "image";
+					}
+					else {
+						type = name;
 					}
 				}
-
-				if (!type) {
-					if (CSS.supports("font-family", value) && /^font(-family)$/.test(property)) {
-						type = "font_stack";
-					}
+				else if (/^-?\d*\.?\d+$/.test(value)) {
+					type = "number";
+				}
+				else if (/^-?\d*\.?\d+[a-z]{1,8}$/.test(value)) {
+					type = "dimension";
+				}
+				else if (/^#[a-f\d]{3,8}$/.test(value) || colorKeywordRegex.test(value)) {
+					type = "color";
+				}
+				else if (/^--|^font(-family)$/.test(property) && /^(?:(["']).+?\1|[\w-]+)(?:,\s*(?:(["']).+?\2|[\w-]+))*$/i.test(value)) {
+					type = "font_stack";
+				}
+				else {
+					type = "other";
 				}
 
 				if (type) {
