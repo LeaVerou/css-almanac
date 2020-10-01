@@ -93,7 +93,7 @@ walkElements(vars.computed, node => {
 				else if (/^-?\d*\.?\d+$/.test(value)) {
 					type = "number";
 				}
-				else if (/^-?\d*\.?\d+[a-z]{1,8}$/.test(value)) {
+				else if (/^-?\d*\.?\d+[a-z%]{1,8}$/.test(value)) {
 					type = "dimension";
 				}
 				else if (/^#[a-f\d]{3,8}$/.test(value) || colorKeywordRegex.test(value)) {
