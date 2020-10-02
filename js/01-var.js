@@ -9,7 +9,8 @@ let ret = {
 		none: 0,
 		literal: 0,
 		var: 0
-	}
+	},
+	initial: 0
 };
 
 walkRules(ast, rule => {
@@ -46,15 +47,22 @@ walkDeclarations(ast, ({property, value}, rule) => {
 		}
 	}
 
-	if (property.startsWith("--") && rule.selectors) {
-		for (let selector of rule.selectors) {
-			let sast = parsedSelectors[selector] = parsedSelectors[selector] || parsel.parse(selector);
-			parsel.walk(sast, node => {
-				if (node.type === "pseudo-class") {
-					incrementByKey(ret["pseudo-classes"], node.name);
-				}
-			})
+	if (property.startsWith("--")) {
+		if (value === "initial") {
+			ret.initial++;
 		}
+
+		if (rule.selectors) {
+			for (let selector of rule.selectors) {
+				let sast = parsedSelectors[selector] = parsedSelectors[selector] || parsel.parse(selector);
+				parsel.walk(sast, node => {
+					if (node.type === "pseudo-class") {
+						incrementByKey(ret["pseudo-classes"], node.name);
+					}
+				})
+			}
+		}
+
 	}
 });
 
