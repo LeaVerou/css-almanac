@@ -4,7 +4,12 @@ let ret = {
 	properties: {},
 	functions: {},
 	supports: {},
-	"pseudo-classes": {}
+	"pseudo-classes": {},
+	fallback: {
+		none: 0,
+		literal: 0,
+		var: 0
+	}
 };
 
 walkRules(ast, rule => {
@@ -16,13 +21,26 @@ walkRules(ast, rule => {
 let parsedSelectors = {};
 
 walkDeclarations(ast, ({property, value}, rule) => {
-	if (matches(value, /var\(\s*--/)) {
+	if (matches(value, /\bvar\(\s*--/)) {
 		if (!property.startsWith("--")) {
 			incrementByKey(ret.properties, property);
 		}
 
 		for (let call of extractFunctionCalls(value)) {
-			if (call.name !== "var" && call.args.includes("var(--")) {
+			if (call.name === "var") {
+				let fallback = call.args.split(",").slice(1).join(",");
+
+				if (matches(fallback, /\bvar\(\s*--/)) {
+					ret.fallback.var++;
+				}
+				else if (fallback) {
+					ret.fallback.literal++;
+				}
+				else {
+					ret.fallback.none++;
+				}
+			}
+			else if (call.args.includes("var(--")) {
 				incrementByKey(ret.functions, call.name);
 			}
 		}
