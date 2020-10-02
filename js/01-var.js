@@ -3,7 +3,8 @@ export default function compute() {
 let ret = {
 	properties: {},
 	functions: {},
-	supports: {}
+	supports: {},
+	"pseudo-classes": {}
 };
 
 walkRules(ast, rule => {
@@ -12,18 +13,32 @@ walkRules(ast, rule => {
 	}
 }, {type: "supports"});
 
-walkDeclarations(ast, ({property, value}) => {
-	if (!property.startsWith("--")) {
-		incrementByKey(ret.properties, property);
-	}
+let parsedSelectors = {};
 
-	for (let call of extractFunctionCalls(value)) {
-		if (call.name !== "var" && call.args.includes("var(--")) {
-			incrementByKey(ret.functions, call.name);
+walkDeclarations(ast, ({property, value}, rule) => {
+	if (matches(value, /var\(\s*--/)) {
+		if (!property.startsWith("--")) {
+			incrementByKey(ret.properties, property);
+		}
+
+		for (let call of extractFunctionCalls(value)) {
+			if (call.name !== "var" && call.args.includes("var(--")) {
+				incrementByKey(ret.functions, call.name);
+			}
 		}
 	}
 
-}, {values: /var\(\s*--/});
+	if (property.startsWith("--") && rule.selectors) {
+		for (let selector of rule.selectors) {
+			let sast = parsedSelectors[selector] = parsedSelectors[selector] || parsel.parse(selector);
+			parsel.walk(sast, node => {
+				if (node.type === "pseudo-class") {
+					incrementByKey(ret["pseudo-classes"], node.name);
+				}
+			})
+		}
+	}
+});
 
 for (let type in ret) {
 	ret[type] = sortObject(ret[type]);
