@@ -49,10 +49,10 @@ walkDeclarations(ast, ({property, value}) => {
 
 		// Separate color and position(s)
 		stops = stops.map(s => {
-			let color = s.match(/#[a-f0-9]+|(?:rgba?|hsla?|color)\((\(.*?\)|.)+?\)/)?.[0];
+			let color = s.match(/#[a-f0-9]+|(?:rgba?|hsla?|color)\((\(.*?\)|.)+?\)/) && s.match(/#[a-f0-9]+|(?:rgba?|hsla?|color)\((\(.*?\)|.)+?\)/)[0];
 
 			if (!color) {
-				color = s.match(keywordRegex)?.[0];
+				color = s.match(keywordRegex) && s.match(keywordRegex)[0];
 			}
 
 			let pos = s.replace(color, "").trim().split(/\s+/);
@@ -79,7 +79,7 @@ walkDeclarations(ast, ({property, value}) => {
 				}
 				// Two positions of which the first is 0 or the same as the last one
 				else if (s.pos.length === 2) {
-					if (parseFLoat(s.pos[0]) === 0 || prev.pos.length === 2 && s.pos[0] === prev.pos?.[1] || prev.pos.length === 1 && s.pos[0] === s.pos[0]) {
+					if (parseFLoat(s.pos[0]) === 0 || prev.pos.length === 2 && s.pos[0] === prev.pos && prev.pos[1] || prev.pos.length === 1 && s.pos[0] === s.pos[0]) {
 						ret.hard_stops++;
 					}
 				}
