@@ -16,7 +16,7 @@ function addScript(url) {
 addScript("../../parsel/parsel_nomodule.js");
 addScript("../../rework-utils/rework-utils.js");
 addScript("../runtime/var-tree.js").then(() => {
-	let data = analyzeVariables();
+	let data = analyzeVariables({serializeElements: true});
 	window.vars = data;
 
 	if (Object.keys(data.summary).length === 0 && data.computed.length === 0) {

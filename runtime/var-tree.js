@@ -1,5 +1,7 @@
 //[css-variables]
-function analyzeVariables() {
+(()=>{
+
+window.analyzeVariables = function(o = {}) {
 
 const PREFIX = "almanac-var2020-";
 
@@ -278,31 +280,74 @@ for (let o of modifiedRules) {
 	}
 }
 
-computed = collapseDuplicateSiblings(computed);
+if (o.serializeElements && o.collapseDuplicateSiblings !== false) {
+	computed = collapseDuplicateSiblings(computed);
+}
+
+// Remove empty arrays
+for (let property in summary) {
+	if (summary[property].get.length === 0) {
+		delete summary[property].get;
+	}
+
+	if (summary[property].set.length === 0) {
+		delete summary[property].set;
+	}
+}
+
+walkElements(computed, node => {
+	if (node.children.length === 0) {
+		delete node.children;
+	}
+
+	if (o.serializeElements) {
+		node.element = serializeElement(node.element);
+	}
+})
+
+
 
 return {summary, computed};
 
 };
 
+function walkElements(node, callback) {
+	if (Array.isArray(node)) {
+		for (let n of node) {
+			walkElements(n, callback);
+		}
+	}
+	else {
+		callback(node);
+
+		if (node.children) {
+			walkElements(node.children, callback);
+		}
+	}
+}
+
+function serializeElement(element) {
+	if (element instanceof Element) {
+		let str = element.tagName;
+
+		if (element.classList.length > 0) {
+			str += "." + [...element.classList].join(".")
+		}
+
+		if (element.id) {
+			str += "#" + element.id;
+		}
+
+		return str;
+	}
+	
+	return element;
+}
+
 function serialize(data, separator) {
 	return JSON.stringify(data, (key, value) => {
 		if (value instanceof HTMLElement) {
-			let str = value.tagName;
-
-			if (value.classList.length > 0) {
-				str += "." + [...value.classList].join(".")
-			}
-
-			if (value.id) {
-				str += "#" + value.id;
-			}
-
-			return str;
-		}
-
-		// remove empty arrays
-		if (Array.isArray(value) && value.length === 0) {
-			return;
+			return serializeElement(value);
 		}
 
 		return value;
@@ -312,3 +357,4 @@ function serialize(data, separator) {
 // let data = analyzeVariables();
 
 // console.log(serialize(data, "\t"));
+})();
