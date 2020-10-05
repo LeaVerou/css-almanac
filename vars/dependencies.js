@@ -50,7 +50,7 @@ walkElements(vars.computed, (node, parent) => {
 			let o = node.declarations[property];
 			if (o.computed && o.computed.trim() !== o.value.trim() && (o.computed === "initial" || o.computed === "null")) {
 				// Cycle or missing ref
-				incrementByKey(ret, "initial");
+				incrementByKey(ret, "cycles_or_initial");
 			}
 			else {
 				let depth = countDependencyLength(node, property);
