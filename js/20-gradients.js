@@ -3,6 +3,8 @@ export default function compute() {
 let ret = {
 	functions: {}, // usage by gradient function
 	properties: {}, // usage by property
+	max_stops: 0,
+	max_stops_gradient: [],
 	two_positions: 0,
 	hints: 0,
 	hard_stops: 0
@@ -53,6 +55,15 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 
 		stopCount.push(stops.length);
+
+		if (ret.max_stops < stops.length) {
+			ret.max_stops = stops.length;
+			ret.max_stops_gradient = [];
+		}
+
+		if (ret.max_stops === stops.length) {
+			ret.max_stops_gradient.push(value.substring(...gradient.pos));
+		}
 
 		// The rest will fail if we have variables with fallbacks in the args so let's just skip those altogether for now
 		if (/\bvar\(/.test(args)) {
@@ -109,7 +120,6 @@ walkDeclarations(ast, ({property, value}) => {
 
 // Calculate average and max number of stops
 stopCount = stopCount.sort((a, b) => b - a);
-ret.max_stops = Math.max(...stopCount);
 ret.avg_stops = stopCount.reduce((a, c) => a + c, 0) / stopCount.length;
 
 let mi = (stopCount.length - 1) / 2;
