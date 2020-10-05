@@ -3,7 +3,7 @@ export default function compute() {
 function walkElements(node, callback, parent) {
 	if (Array.isArray(node)) {
 		for (let n of node) {
-			walkElements(n, callback, node);
+			walkElements(n, callback, parent);
 		}
 	}
 	else {
@@ -15,46 +15,50 @@ function walkElements(node, callback, parent) {
 	}
 }
 
-let ret = {
+let ret = {max_length: 0};
 
-};
-
-function countDependencyLength(declarations, property) {
-	let o = declarations[property];
-
-	if (o === undefined) {
+function countDependencyLength(node, property) {
+	if (!node) {
 		return 0;
 	}
+
+	let declarations = node.declarations;
+
+	if (!declarations || !(property in declarations)) {
+		return countDependencyLength(node.parent, property);
+	}
+
+	let o = declarations[property];
 
 	if (!o.references || o.references.length === 0) {
 		return 0;
 	}
 
-	let lengths = o.references.map(p => countDependencyLength(declarations, p));
+	let lengths = o.references.map(p => countDependencyLength(node, p));
 
 	return 1 + Math.max(...lengths);
 }
 
 walkElements(vars.computed, (node, parent) => {
-	if (node.declarations) {
-		// Make inheritance explicit
-		if (parent && parent.declarations) {
-			for (let property in parent.declarations) {
-				if (!(property in node.declarations)) {
-					node.declarations[property] = Object.assign({inherited: true}, parent.declarations[property]);
-				}
-			}
-		}
+	if (parent && !node.parent) {
+		node.parent = parent;
+	}
 
+	if (node.declarations) {
 		for (let property in node.declarations) {
 
 			let o = node.declarations[property];
-			if (o.computed && o.computed.trim() === "initial" && o.value.trim() !== "initial") {
+			if (o.computed && o.computed.trim() !== o.value.trim() && (o.computed === "initial" || o.computed === "null")) {
 				// Cycle or missing ref
 				incrementByKey(ret, "initial");
 			}
-			else if (o.references) {
-				let depth = countDependencyLength(node.declarations, property);
+			else {
+				let depth = countDependencyLength(node, property);
+
+				if (depth > ret.max_length) {
+					ret.max_length = depth;
+				}
+
 				incrementByKey(ret, depth);
 			}
 		}
