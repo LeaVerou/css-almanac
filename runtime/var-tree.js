@@ -305,8 +305,6 @@ walkElements(computed, node => {
 	}
 })
 
-
-
 return {summary, computed};
 
 };
@@ -340,7 +338,7 @@ function serializeElement(element) {
 
 		return str;
 	}
-	
+
 	return element;
 }
 
