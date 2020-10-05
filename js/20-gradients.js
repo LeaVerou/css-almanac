@@ -86,7 +86,7 @@ walkDeclarations(ast, ({property, value}) => {
 					}
 				}
 			}
-			else {
+			else if (!s.color) {
 				ret.hints++;
 			}
 		}
@@ -96,8 +96,13 @@ walkDeclarations(ast, ({property, value}) => {
 });
 
 // Calculate average and max number of stops
+stopCount = stopCount.sort((a, b) => b - a);
 ret.max_stops = Math.max(...stopCount);
 ret.avg_stops = stopCount.reduce((a, c) => a + c, 0) / stopCount.length;
+
+let mi = (stopCount.length - 1) / 2;
+ret.median_stops = stopCount.length % 2? stopCount[mi] : (stopCount[Math.floor(mi)] + stopCount[Math.ceil(mi)]) / 2;
+ret.stop_count = stopCount;
 
 return ret;
 
