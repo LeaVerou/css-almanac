@@ -93,16 +93,12 @@ walkDeclarations(ast, ({property, value}) => {
 			let prev = stops[i - 1];
 
 			// Calculate hard stops
-			if (prev && s.pos && !s.pos.join("").includes("calc()")) {
-				// 1 position which is either 0 or the same as the previous one
-				if (s.pos.length === 1 && s.pos === prev.pos || parseFloat(s.pos) === 0) {
+			if (prev && prev.pos && s.pos && !s.pos.join("").includes("calc()")) {
+				let pos = s.pos[0];
+				let prevPos =  prev.pos[prev.pos.length === 1? 0 : 1];
+
+				if (parseFloat(pos) === 0 || pos === prevPos) {
 					ret.hard_stops++;
-				}
-				// Two positions of which the first is 0 or the same as the last one
-				else if (s.pos.length === 2) {
-					if (parseFLoat(s.pos[0]) === 0 || prev.pos.length === 2 && s.pos[0] === (prev.pos && prev.pos[1]) || prev.pos.length === 1 && s.pos[0] === s.pos[0]) {
-						ret.hard_stops++;
-					}
 				}
 			}
 		}
