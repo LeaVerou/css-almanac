@@ -38,9 +38,11 @@ walkDeclarations(ast, ({property, value}) => {
 
 		// Light color stop parsing
 
-		// This will fail if we have variables with fallbacks in the args so let's just skip those altogether for now
-		if (/\bvar\(|\bcalc\(/.test(args)) {
-			continue;
+		// Collapse nested function calls into empty function calls
+		for (let i=0, lastIndex; (i = args.indexOf("(", lastIndex + 1)) > -1; ) {
+			let a = parsel.gobbleParens(args, i);
+			args = args.substring(0, i) + "()" + args.substring(i + a.length);
+			lastIndex = i;
 		}
 
 		let stops = args.split(/\s*,\s*/);
@@ -50,34 +52,48 @@ walkDeclarations(ast, ({property, value}) => {
 			stops.shift();
 		}
 
+		stopCount.push(stops.length);
+
+		// The rest will fail if we have variables with fallbacks in the args so let's just skip those altogether for now
+		if (/\bvar\(/.test(args)) {
+			continue;
+		}
+
 		// Separate color and position(s)
 		stops = stops.map(s => {
-			let match = s.match(/#[a-f0-9]+|(?:rgba?|hsla?|color)\((\(.*?\)|.)+?\)/);
-			let color = match && match[0];
-
-			if (!color) {
-				let match = s.match(keywordRegex);
-				color = match && match[0];
+			if (/\s/.test(s)) {
+				// Even though the spec doesn't mandate an order, all browsers implement the older grammar
+				// with the position after the color, so placing the position before the color must be extremely rare.
+				let parts = s.split(/\s+/);
+				return {color: parts[0], pos: parts.slice(1)};
 			}
 
-			let pos = s.replace(color, "").trim().split(/\s+/);
+			// We only have one thing, is it a color or a position?
+			if (/#[a-f0-9]+|(?:rgba?|hsla?|color)\(/.test(s) || keywordRegex.test(s)) {
+				keywordRegex.lastIndex = 0;
+				return {color: s};
+			}
 
-			return {color, pos};
+			return {pos: s};
 		});
-
-		stopCount.push(stops.length);
 
 		for (let i=0; i<stops.length; i++) {
 			let s = stops[i];
 
-			if (s.pos.length > 1) {
+			if (s.pos && s.pos.length > 1) {
 				ret.two_positions++;
+			}
+
+			if (!s.color) {
+				// No color, it must be a hint
+				ret.hints++;
+				continue;
 			}
 
 			let prev = stops[i - 1];
 
 			// Calculate hard stops
-			if (s.color && prev) {
+			if (prev && s.pos && !s.pos.join("").includes("calc()")) {
 				// 1 position which is either 0 or the same as the previous one
 				if (s.pos.length === 1 && s.pos === prev.pos || parseFloat(s.pos) === 0) {
 					ret.hard_stops++;
@@ -88,9 +104,6 @@ walkDeclarations(ast, ({property, value}) => {
 						ret.hard_stops++;
 					}
 				}
-			}
-			else if (!s.color) {
-				ret.hints++;
 			}
 		}
 	}
