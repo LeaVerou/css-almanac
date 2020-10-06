@@ -44,10 +44,10 @@ const functionNames = /^(?:rgba?|hsla?|color|lab|lch|hwb)$/gi;
 function countMatches(haystack, needle) {
 	let ret = 0;
 
-	haystack.replaceAll(needle, r => {
+	for (let match of haystack.matchAll(needle)) {
 		ret++;
-		return r;
-	});
+	}
+	
 	return ret;
 }
 
@@ -106,7 +106,7 @@ walkDeclarations(ast, ({property, value}) => {
 
 				incrementByKey(usage.spaces, space);
 
-				if (/^[\d.+%\s]+$/.test(params) && space === "display-p3") {
+				if (/^[-\d.+%\s]+$/.test(params) && space === "display-p3") {
 					let percents = params.indexOf("%") > -1;
 					let coords = params.trim().split(/\s+/).map(c => parseFloat(c) / (percents? 100 : 1));
 
