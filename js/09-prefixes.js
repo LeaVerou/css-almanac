@@ -32,7 +32,9 @@ export default function compute() {
 				}
 
 				// Prefixed keywords
-				value.match(/(?<![-a-z])-[a-z]+-[a-z-]+(?=;|\s|,|\/)/g)?.forEach(k => incrementByKey(ret.keywords, k));
+				for (let k of value.matchAll(/(?<![-a-z])-[a-z]+-[a-z-]+(?=;|\s|,|\/)/g)) {
+					incrementByKey(ret.keywords, k);
+				}
 			});
 		}
 
@@ -40,10 +42,11 @@ export default function compute() {
 		if (rule.media) {
 			let features = rule.media
 								.replace(/\s+/g, "")
-								.match(/\(-[a-z]+-[\w-]+(?=[:\)])/g)
-								?.map(s => s.slice(1));
+								.match(/\(-[a-z]+-[\w-]+(?=[:\)])/g);
 
 			if (features) {
+				features = features.map(s => s.slice(1));
+
 				for (let feature of features) {
 					incrementByKey(ret.media, feature);
 				}

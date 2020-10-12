@@ -5,10 +5,11 @@ export default function compute() {
 	walkRules(ast, rule => {
 		let features = rule.media
 							.replace(/\s+/g, "")
-							.match(/\([\w-]+(?=[:\)])/g)
-							?.map(s => s.slice(1));
+							.match(/\([\w-]+(?=[:\)])/g);
 
 		if (features) {
+			features = features.map(s => s.slice(1));
+			
 			for (let feature of features) {
 				incrementByKey(ret, feature);
 			}
