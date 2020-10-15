@@ -93,7 +93,7 @@ walkDeclarations(ast, ({property, value}) => {
 				}
 
 				// We only have one thing, is it a color or a position?
-				if (/#[a-f0-9]+|(?:rgba?|hsla?|color)\(/.test(s) || keywordRegex.test(s)) {
+				if (/#[a-f0-9]+|(?:rgba?|hsla?|color)\(/i.test(s) || keywordRegex.test(s)) {
 					keywordRegex.lastIndex = 0;
 					return {color: s};
 				}
