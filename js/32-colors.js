@@ -47,7 +47,7 @@ function countMatches(haystack, needle) {
 	for (let match of haystack.matchAll(needle)) {
 		ret++;
 	}
-	
+
 	return ret;
 }
 
@@ -86,6 +86,12 @@ function lin_P3_to_sRGB (linP3) {
 }
 
 walkDeclarations(ast, ({property, value}) => {
+	// First remove url() references to avoid them mucking the results
+	for (let f of extractFunctionCalls(value, {names: "url"})) {
+		let [start, end] = f.pos;
+		value = value.substring(0, start) + "url()" + " ".repeat(end - start - 5) + value.substring(end);
+	}
+
 	usage.hex[3] += countMatches(value, /#[a-f0-9]{3}\b/gi);
 	usage.hex[4] += countMatches(value, /#[a-f0-9]{4}\b/gi);
 	usage.hex[6] += countMatches(value, /#[a-f0-9]{6}\b/gi);
