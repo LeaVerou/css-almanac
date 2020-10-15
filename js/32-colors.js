@@ -117,11 +117,11 @@ walkDeclarations(ast, ({property, value}) => {
 	}
 
 	for (let match of value.matchAll(keywordRegex)) {
-		incrementByKey(usage.keywords, match[0]);
+		incrementByKey(usage.keywords, match[0].toLowerCase());
 	}
 
 	for (let match of value.matchAll(systemRegex)) {
-		incrementByKey(usage.system, match[0]);
+		incrementByKey(usage.system, system.find(kw => kw.toLowerCase() == match[0].toLowerCase()));
 	}
 
 	for (let match of value.matchAll(/\b(?<!\-)(?:currentColor|transparent)\b/gi)) {
