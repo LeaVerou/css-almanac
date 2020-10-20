@@ -1,30 +1,31 @@
 export default function compute() {
 
 let ret = {
+	zeroes: {},
 	by_property: {}
 };
 
-const lengths = /(?<!-)\b(?<number>-?\d*\.?\d+)(?<unit>%|[a-z]{1,4}\b|(?=\s|$|,|\*|\/)\b)/gi;
+const lengths = /(?<![-#\w])\b(?<number>-?\d*\.?\d+)(?<unit>%|[a-z]{1,4}\b|(?=\s|$|,|\*|\/)\b)/gi;
 
 walkDeclarations(ast, ({property, value}) => {
+	// Remove color functions to avoid mucking results
+	value = removeFunctionCalls(value, {names: ["rgb", "rgba", "hsl", "hsla"]});
+
 	for (let length of value.matchAll(lengths)) {
 		let {number, unit} = length.groups;
 		ret.by_property[property] = ret.by_property[property] || {};
+
+		if (number === "0") {
+			incrementByKey(ret.zeroes, unit || "<number>");
+		}
 
 		if (unit) {
 			incrementByKey(ret, unit);
 			incrementByKey(ret.by_property[property], unit);
 		}
 		else {
-			if (number === "0") {
-				// Unitless 0
-				incrementByKey(ret, "0");
-				incrementByKey(ret.by_property[property], "0");
-			}
-			else {
-				incrementByKey(ret, "<number>");
-				incrementByKey(ret.by_property[property], "<number>");
-			}
+			incrementByKey(ret, "<number>");
+			incrementByKey(ret.by_property[property], "<number>");
 		}
 
 		incrementByKey(ret, "total"); // for calculating %
@@ -36,12 +37,13 @@ walkDeclarations(ast, ({property, value}) => {
 	// This helped: https://codepen.io/leaverou/pen/rNergbW?editors=0010
 	properties: [
 		"baseline-shift",
+		"box-shadow",
 		"vertical-align",
+		"clip-path",
 		/^column[s-]|^inset\b/g,
 		"contain-intrinsic-size",
 		"cx",
 		"cy",
-		"flex",
 		"flex-basis",
 		"letter-spacing",
 		"perspective",
@@ -52,6 +54,7 @@ walkDeclarations(ast, ({property, value}) => {
 		"ry",
 		"tab-size",
 		"text-indent",
+		"text-shadow",
 		"translate",
 		"vertical-align",
 		"word-spacing",
@@ -61,7 +64,7 @@ walkDeclarations(ast, ({property, value}) => {
 	],
 	not: {
 		// Drop prefixed properties and custom properties
-		properties: /^-/
+		properties: /^-|-color$/
 	}
 });
 
