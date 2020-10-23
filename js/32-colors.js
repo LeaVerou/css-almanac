@@ -105,14 +105,14 @@ walkDeclarations(ast, ({property, value}) => {
 
 		if (name === "color") {
 			// Let's look at color() more closely
-			let match = args.match(/^(?<space>[\w-]+)\s+(?<params>.+)$/);
+			let match = args.match(/^(?<space>[\w-]+)\s+(?<params>[-\d\s.%\/]+)$/);
 
 			if (match) {
 				let {space, params} = match.groups;
 
 				incrementByKey(usage.spaces, space);
 
-				if (/^[-\d.+%\s]+$/.test(params) && space === "display-p3") {
+				if (space === "display-p3") {
 					let percents = params.indexOf("%") > -1;
 					let coords = params.trim().split(/\s+/).map(c => parseFloat(c) / (percents? 100 : 1));
 
