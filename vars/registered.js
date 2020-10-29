@@ -15,32 +15,21 @@ function walkElements(node, callback) {
 	}
 }
 
-let ret = {
-	root: 0,
-	body: 0,
-	descendants: 0
-};
+let ret = new Set();
 
 walkElements(vars.computed, node => {
 	if (node.declarations) {
 		for (let property in node.declarations) {
+			let value;
 			let o = node.declarations[property];
 
-			if (property.startsWith("--")) {
-				if (/^HTML\b/.test(node.element)) {
-					ret.root++;
-				}
-				else if (/^BODY\b/.test(node.element)) {
-					ret.body++;
-				}
-				else {
-					ret.descendants++;
-				}
+			if (property.startsWith("--") && o.type) {
+				ret.add(property);
 			}
 		}
 	}
 });
 
-return ret;
+return [...ret];
 
 }
