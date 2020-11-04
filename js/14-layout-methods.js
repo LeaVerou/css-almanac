@@ -3,13 +3,16 @@ export default function compute() {
 let ret = {};
 
 walkDeclarations(ast, ({property, value}) => {
-	let key = value;
+	let key;
 
 	if (property === "float") {
 		key = "floats";
 	}
 	else if (/^table(-|$)/.test(value)) {
 		key = "css-tables";
+	}
+	else {
+		key = value.replace(/-(webkit|moz|o|webkit|khtml)-|!.+$/g, "").toLowerCase();
 	}
 
 	incrementByKey(ret, key);
