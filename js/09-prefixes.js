@@ -32,8 +32,10 @@ export default function compute() {
 				}
 
 				// Prefixed keywords
-				for (let k of value.matchAll(/(?<![-a-z])-[a-z]+-[a-z-]+(?=;|\s|,|\/)/g)) {
-					incrementByKey(ret.keywords, k);
+				if (!matches(property, /(^|-)(transition(-property)?|animation(-name)?)$/)) {
+					for (let k of value.matchAll(/(?<![-a-z])-[a-z]+-[a-z-]+(?=$|\s|,|\/)/g)) {
+						incrementByKey(ret.keywords, k);
+					}
 				}
 			});
 		}
