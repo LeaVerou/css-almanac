@@ -40,7 +40,7 @@ const colorKeywords = [
 	"transparent", "currentColor"
 ];
 
-const colorKeywordRegex = RegExp(`^(?:${colorKeywords.join("|")})$`, "gi");
+const colorKeywordRegex = RegExp(`^\b(?<!\-)(?:${colorKeywords.join("|")})$`, "gi");
 
 walkElements(vars.computed, node => {
 	if (node.declarations) {
