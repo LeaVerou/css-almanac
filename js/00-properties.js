@@ -2,10 +2,12 @@ export default function compute() {
 
 let ret = {};
 
-walkRules(ast, rule => {
-	walkDeclarations(rule.rules, ({property, value}) => {
-		incrementByKey(ret, property);
-	});
+walkDeclarations(ast, ({property, value}) => {
+	if (!property.startsWith("--")) { // Custom props are case sensitive
+		property = property.toLowerCase();
+	}
+
+	incrementByKey(ret, property);
 });
 
 return sortObject(ret);
