@@ -1,5 +1,6 @@
 export default function compute() {
 	let ret = {
+		total: {},
 		pseudo_classes: {},
 		pseudo_elements: {},
 		properties: {},
@@ -7,6 +8,8 @@ export default function compute() {
 		keywords: {},
 		media: {}
 	};
+
+	ret.total = Object.fromEntries(Object.keys(ret).map(k => [k, 0]));
 
 	walkRules(ast, rule => {
 		// Prefixed pseudos
@@ -16,6 +19,7 @@ export default function compute() {
 			for (let pseudo of pseudos) {
 				let type = "pseudo_" + (pseudo.indexOf("::") === 0? "elements" : "classes");
 				incrementByKey(ret[type], pseudo);
+				ret.total[type]++;
 			}
 		}
 
@@ -24,17 +28,20 @@ export default function compute() {
 				// Prefixed properties
 				if (/^-[a-z]+-.+/.test(property)) {
 					incrementByKey(ret.properties, property);
+					ret.total.properties++;
 				}
 
 				// -prefix-function()
 				for (let call of extractFunctionCalls(value, {names: /^-[a-z]+-.+/})) {
 					incrementByKey(ret.functions, call.name);
+					ret.total.functions++;
 				}
 
 				// Prefixed keywords
 				if (!matches(property, /(^|-)(transition(-property)?|animation(-name)?)$/)) {
 					for (let k of value.matchAll(/(?<![-a-z])-[a-z]+-[a-z-]+(?=$|\s|,|\/)/g)) {
 						incrementByKey(ret.keywords, k);
+						ret.total.keywords++;
 					}
 				}
 			});
@@ -51,12 +58,13 @@ export default function compute() {
 
 				for (let feature of features) {
 					incrementByKey(ret.media, feature);
+					ret.total.media++;
 				}
 			}
 		}
-
-
 	});
+
+	ret.total.total = sumObject(ret.total);
 
 	for (let type in ret) {
 		ret[type] = sortObject(ret[type]);
