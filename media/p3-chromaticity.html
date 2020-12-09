@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+
+<textarea id="foo" cols="120" rows="36"></textarea>
+
+<script type="module">
+import Color from "https://colorjs.io/color.js";
+
+// Will hold symbols indicating chromaticity shift of each color pair
+let shift = [];
+
+// List of colors found from HTTP Web Archive crawl
+// to be using the CSS 4 color() function.
+// In 2020, only display-p3 was in use in color()
+// The pairs are fallback color, then the p3 color
+let pairs = [
+
+// https://panic.com/panic.css?2019-11-13
+["rgba(255,205,63,1) ",   "color(display-p3 1 0.80 0.25 / 1)"],    // --yellow
+// ["rgba(255,248,178,1)",      "(none)"]                            // --lightyellow
+["rgba(120,0,255,1)",     "color(display-p3 0.47 0 1 / 1)"],       // --purple
+["rgba(121,127,132,1)",   "color(display-p3 0.48 0.50 0.52 / 1)"], // --gray
+["rgba(200,200,200,1)",   "color(display-p3 0.78 0.78 0.78 / 1)"], // --lightgray
+["rgba(97,97,99,1)",      "color(display-p3 0.39 0.39 0.39 / 1)"],  // --darkgray
+["rgba(0,0,0,1)",         "color(display-p3 0 0 0 / 1)"],          // --black
+["rgba(255,255,255,1)",   "color(display-p3 1 1 1 / 1)"],          // --white
+["rgba(84,64,135,1)",     "color(display-p3 0.33 0.25 0.53 / 1)"],  // --purple1
+["rgba(131,103,201,1)",   "color(display-p3 0.51 0.40 0.78 / 1)"],  // --purple2
+["rgba(68,185,208,1)",    "color(display-p3 0.27 0.75 0.82 / 1)"],  // --teal1
+["rgb(255,0,72)",         "color(display-p3 1 0 0.2823 / 1)"],     // --pink12
+// https://play.date/static/css/colors.css?2af0635dc0a4
+// *many* exactly the same as panic.com (both p3 and fallback). Common tool?
+["rgba(241,174,50,1)",    "color(display-p3 0.95 0.68 0.17 / 1)"],
+["rgba(245,181,40,1)",    "color(display-p3 0.96 0.71 0.16 / 1)"],
+["rgb(147, 83, 255)",     "color(display-p3 0.58 0.33 1 / 1)"],
+["rgba(75,3,161,1)",      "color(display-p3 0.29 0.01 0.63 / 1)"],
+["rgba(255,0,0,0.85)",    "color(display-p3 1 0 0 / 0.85)"],
+
+["rgba(84,64,135,1)",     "color(display-p3 0.33 0.25 0.53 / 1)"],
+["rgba(131,103,201,1)",   "color(display-p3 0.51 0.40 0.78 / 1)"],
+["rgba(68,185,208,1)",    "color(display-p3 0.27 0.75 0.82 / 1)"],
+
+["#6d3bff",     "color(display-p3 .427 .231 1)"],
+["#03d658",     "color(display-p3 .012 .839 .345)"],
+["#ff3900",     "color(display-p3 1 .224 0)"],
+["#7cf8b3",     "color(display-p3 .486 .973 .702)"],
+["#f8f8f8",     "color(display-p3 .973 .973 .973)"],
+["#e3f5fd",     "color(display-p3 .875 .945 .976)"],
+
+["#e74832",     "color( display-p3 .905882353 .282352941 .196078431 / 1 )"],
+
+["#303e6a",     "color( display-p3 0.188 0.243 0.416 / 1 )"],
+["#08257c",     "color( display-p3 0.031 0.145 0.486 / 1 )"],
+
+["#706f6f",     "color(display-p3 .439 .435 .435/1)"],
+["#005992",     "color(display-p3 0 .349 .573/1)"],
+["#1a1b1f",     "color(display-p3 .102 .106 .122/1)"],
+["#e0ebf2",     "color(display-p3 .878 .922 .949/1)"],
+
+["#e9607e",     "color( display-p3 0.914 0.376 0.494 / 1 )"],
+
+["#222222",     "color( display-p3 0.133 0.133 0.133 / 1 )"],
+["#fef8e7",     "color( display-p3 0.996 0.973 0.906 / 1 )"],
+["#e15718",     "color( display-p3 0.882 0.341 0.094 / 1 )"],
+["#082e54",     "color( display-p3 0.031 0.18 0.329 / 1 )"],
+["#dae0e6",     "color( display-p3 0.855 0.878 0.902 / 1 )"],
+["#fff6f8",     "color( display-p3 1 0.965 0.973 / 1 )"],
+
+["#2a93ca",     "color(display-p3 .165 .576 .792 / 1)"],
+// ["(none)",      "color( display-p3 0.102 0.106 0.122 / 1 )"],
+
+["#009183",     "color( display-p3 0 0.569 0.514 / 1 )"],
+["#ff6e47",     "color( display-p3 1 0.431 0.278 / 1 )"],
+
+
+["#1b1b1d",     "color( display-p3 0.106 0.106 0.114 / 1 )"],
+["#4f6483",     "color( display-p3 0.31 0.392 0.514 / 1 )"],
+["#a50832",     "color( display-p3 0.647 0.031 0.196 / 1 )"],
+["#dae0e6",     "color( display-p3 0.855 0.878 0.902 / 1 )"],
+["#fafafa",     "color( display-p3 0.98 0.98 0.98 / 1 )"],
+
+// https://lexlaw.co.uk/ duplicates
+// ["#303e6a",     "color( display-p3 0.188 0.243 0.416 / 1 )"],
+// ["#08257c",     "color( display-p3 0.031 0.145 0.486 / 1 )"],
+
+// https://teezeh.de/
+["#cc0066",     "color( display-p3 0.8 0 0.4 / 1 )"],
+
+// http://andersnoren.se/
+["#e74832",     "color( display-p3 .905882353 .282352941 .196078431 / 1 )"],
+
+// https://1e9.community/
+["#48FF7E",     "color(display-p3 0.462 1 0.5/1)"],
+
+// https://bogreolen.dk/
+["#FFA500",     "color(display-p3 .9961 .6667 0)"],
+["#FFCE00",     "color(display-p3 1 .8157 .0667)"],
+
+// https://brightnomad.net/
+["#00c",        "color(display-p3 0 0 .8 / 1)"],
+["#2db0fe",     "color(display-p3 .176 .69 .996 / 1)"],
+["#d1eeff",     "color(display-p3 .82 .933 1 / 1)"],
+
+// https://featurepoints.zendesk.com/ none found by rework, crawl reports 60
+["#1da0ef",     "color(display-p3 0.122 0.62 0.937)"],
+
+// https://jungrelations.com/wp-content/themes/jung-relations/style.css?ver=1.0.24
+["#F95974",    "color( display-p3 .97 0.349 0.454 / 1 )"], // .color-pink
+["#1BA388",    "color( display-p3 0.105 0.639 0.533 / 1 )"], // .color-green
+
+// https://cdn.lootvalley.com/loot/1.9/assets/css/min/landing.css
+["#6d3bff",     "color(display-p3 .427 .231 1)"],
+["#e3f5fd",     "color(display-p3 .875 .945 .976)"],
+["#ff3900",     "color(display-p3 1 .224 0)"],
+["#7cf8b3",     "color(display-p3 .486 .973 .702)"],
+["#f8f8f8",     "color(display-p3 .973 .973 .973)"],
+["#6d3bff",     "color(display-p3 0 .478 1)"], //dE huge, check. stylesheet is wrong!
+
+// https://rsms.me/res/screen.css?v=20200716210017
+// all dupes from panic.com and playdate.com
+
+// https://sarahmcbride.com/wp-content/cache/autoptimize/css/autoptimize_a53bf160d6ac50d044a3d075e15bf653.css
+// gone, apparently did not get elected
+
+// https://sfs.se/
+["#dc7100",   "color(display-p3 .862745098 .443137255 0 / 1)"], // .entry-content .wp-block-pullquote blockquote:before
+["#fff7f1",   "color(display-p3 1 .968627451 .945098039 / 1)"], // .color-light-orange
+["#6464dc",   "color(display-p3 .392156863 .392156863 .862745098 / 1)"], //  .color-blue
+["#509b82",   "color(display-p3 .31372549 .607843137 .509803922 / 1)"], // .color-green
+["#aa5082",   "color(display-p3 .666666667 .31372549 .509803922 / 1)"], // .bg-pink
+["#dc7100",   "color(display-p3 .862745098 .443137255 0 / 1)"], // .border-orange
+["#509b82",   "color(display-p3 .31372549 .607843137 .509803922 / 1)"], // .border-green
+["#fff2f7",   "color(display-p3 1 .949019608 .968627451 / 1)"], // .has-light-pink-color
+["#DC7100",   "color(display-p3 .862745098 .443137255 0 / 1)"],
+["#509B82",   "color(display-p3 .31372549 .607843137 .509803922 / 1)"],
+["#AA5082",   "color(display-p3 .666666667 .31372549 .509803922 / 1)"],
+["#1e1f20",   "color(display-p3 .117647059 .121568627 .125490196 / 1)"], // .fill-black
+
+
+// https://smartunblurr.com/
+["#082e54",      "color( display-p3 0.031 0.18 0.329 / 1 )"], // .bg-primary
+["#dd3333",      "color( display-p3 0.867 0.2 0.2 / 1 )"],  // .faux-heading
+["#4f6483",      "color( display-p3 0.31 0.392 0.514 / 1 )"], // .bg-secondary
+["#dae0e6",      "color( display-p3 0.855 0.878 0.902 / 1 )"],
+["#fff6f8",      "color( display-p3 1 0.965 0.973 / 1 )"],
+
+// https://tales.dk/
+["#FFA500",     "color(display-p3 .9961 .6667 0)"],
+["#FFCE00",     "color(display-p3 1 .8157 .0667)"],
+
+// https://ukrainamarcina.pl/
+["#212121",     "color(display-p3 .129 .129 .129/1)"],
+["#bebebe",     "color(display-p3 .745 .745 .745/1)"],
+["#ee2",        "color(display-p3 .933 .933 .133/1)"],
+["#edede1",     "color(display-p3 .929 .929 .882/1)"],
+
+// https://vibeche.cc/
+["#fffc00",     "color(display-p3 1 0.9882 0)"],
+
+// https://www.avft.org/
+["#333",        "color( display-p3 0.2 0.2 0.2 / 1 )"],
+["#681160",     "color(display-p3 .408 .067 .376/1)"],
+["#e91e63",     "color(display-p3 .914 .118 .388/1)"],
+["#e0dede",     "color(display-p3 .878 .871 .871/1)"],
+
+// https://www.featurepoints.com/
+["#00a1f3",     "color(display-p3 .114 .627 .937)"],
+["#5b23cb",     "color(display-p3 .357 .137 .796)"],
+["#03d658",     "color(display-p3 .012 .839 .345)"],
+["#e3f5fd",     "color(display-p3 .875 .945 .976)"],
+["#ff3900",     "color(display-p3 1 .224 0)"],
+["#f8f8f8",     "color(display-p3 .973 .973 .973)"],
+
+// https://www.koelnarchitektur.de/
+["#f29832",     "color(display-p3 .949 .596 .196/1)"],
+
+// https://www.rizqifahma.com/
+["#26ad79",     "color(display-p3 .149 .678 .475/1)"],
+
+// https://xcodebuildsettings.com/
+["rgb(255, 255, 255)",    "color(display-p3 1 1 1)"], // --primary-background-color
+["rgb(242, 242, 247)",    "color(display-p3 0.949 0.949 0.9686)"], // --secondary-background-color
+["rgb(54, 54, 56)",    "color(display-p3 0.2117 0.2117 0.2196)"], // --primary-text-color
+["rgb(142, 142, 147)",    "color(display-p3 0.5568 0.5568 0.5764)"], // --secondary-text-color
+["rgb(0, 122, 255)",    "color(display-p3 0 0.4784 1)"], // --accent-color
+["rgb(229, 229, 234)",    "color(display-p3 0.898 0.898 0.9176)"], // --border-color
+["rgb(255, 59, 48)",    "color(display-p3 1 0.2313 0.1882)"], // --accent-color .category-swift
+["rgb(0, 113, 164)",    "color(display-p3 0 0.4431 0.6431)"], // --accent-color .category-clang
+["rgb(36, 138, 61)",    "color(display-p3 0.1411 0.5411 0.2392)"], // --accent-color .category-metal-opencl
+["rgb(88, 86, 214)",    "color(display-p3 0.345 0.3372 0.8392)"], // --accent-color .category-core-data
+["rgb(175, 82, 222)",    "color(display-p3 0.6862 0.3215 0.8705)"], // --accent-color .category-assets-resources
+["rgb(255, 149, 0)",    "color(display-p3 1 0.5843 0)"], // --accent-color .category-interface-builder
+["rgb(72, 72, 74)",    "color(display-p3 0.2823 0.2823 0.2901)"] // --accent-color .category-miscellaneous
+
+// https://lootvalley.com/
+["#6d3bff",     "color(display-p3 .427 .231 1)"],
+["#03d658",     "color(display-p3 .012 .839 .345)"],
+["#e3f5fd",     "color(display-p3 .875 .945 .976)"],
+["#ff3900",     "color(display-p3 1 .224 0)"],
+["#7cf8b3",     "color(display-p3 .486 .973 .702)"],
+["#6d3bff",     "color(display-p3 0 .478 1)"], // another fallback error
+["#f8f8f8",     "color(display-p3 .973 .973 .973)" ],
+
+// https://onderzoekrouw.nl/
+["#d9117b",     "color(display-p3 0.85 0.06 0.48/1)"],
+["#e7368e",     "color(display-p3 0.9 0.21 0.55/1)"],
+
+// https://www.mtledarskap.se/
+["#96C832",        "color( display-p3 0.588 0.784 0.196 / 1 )"], // .color-green
+["#00AFDF",        "color( display-p3 0 0.686 0.8745 / 1 )"], // .color-blue
+["#FFA400",        "color( display-p3 1 0.64313 0 / 1 )"], // .color-orange
+
+];
+
+function in_sRGB(c) {
+    return c.to("srgb").coords.every(c => c >= 0 && c <= 1);
+};
+
+function calculate(col1,col2) {
+
+    const white = new Color("xyz", Color.whites.D65).uv;
+    let c1 = new Color(col1);
+    let c1_uv = c1.uv;
+    let c2 = new Color(col2);
+    let c2_uv = c2.uv;
+    // console.log({c1_uv, c2_uv});
+    // check for black NaN
+    if (isNaN(c1_uv[0])) {
+        c1_uv = white;
+    };
+    if (isNaN(c2_uv[0])) {
+        c2_uv = white;
+    };
+    // invert v for SVG y-down coordinates
+    c1_uv[1] *= -1;
+    c2_uv[1] *= -1;
+    let dE = c2.deltaE(c1, "2000");
+    shift.push(`<g>
+        <polyline stroke="gray" stroke-width="0.002" points="${c1_uv[0]},${c1_uv[1]} ${c2_uv[0]},${c2_uv[1]}"><title>ΔE2k = ${Math.round(dE*1000)/1000}</title></polyline>
+        <circle r="0.002" cx="${c2_uv[0]}" cy="${c2_uv[1]}" fill="${in_sRGB(c2)?c2.to("srgb"):"white"}" stroke="${in_sRGB(c2)?"gray":"red"}" stroke-width="0.0008"/>
+        <circle r="0.003" cx="${c1_uv[0]}" cy="${c1_uv[1]}" fill="${col1}"/>
+        </g>`);
+};
+
+pairs.forEach(pair => calculate(pair[0], pair[1]));
+
+foo.value = `${shift.join("\n")}`;
+</script>
