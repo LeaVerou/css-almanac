@@ -1,0 +1,86 @@
+body {
+	font: 100%/1.5 Helvetica Neue, sans-serif;
+}
+
+input, textarea {
+	font: inherit;
+	border: 1px solid hsl(220 10% 80%);
+	border-radius: .2em;
+	padding: .2em .4em;
+}
+
+fieldset {
+	border: 1px solid rgb(0 0 0 / .05);
+	background: hsl(220 10% 97%);
+	border-radius: .3em;
+}
+
+legend {
+	font-weight: bold;
+	font-size: 130%;
+
+}
+
+#cssForm fieldset > div {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0 .3em;
+}
+
+	#cssForm input[type=radio] {
+		grid-column: 1;
+		align-self: center;
+	}
+
+	#cssForm label {
+		display: contents;
+	}
+
+	#cssForm input[type="url"],
+	#cssForm textarea {
+		width: 100%;
+		box-sizing: border-box;
+		grid-column: 2;
+	}
+
+	#cssForm textarea,
+	pre {
+		font-family: Consolas, Monaco, monospace;
+	}
+
+pre {
+	overflow: auto;
+	tab-size: 4;
+}
+
+input:invalid,
+textarea:invalid,
+.error {
+	color: #c00;
+}
+
+textarea {
+	min-height: calc(var(--lines, 1) * 1.5em);
+}
+
+simple-tabs {
+	margin-top: .5em;
+}
+
+@keyframes loading {
+	from {
+		background-position-x: 200%;
+	}
+}
+
+#cssURL.loading {
+	background: linear-gradient(to right, hsl(220, 10%, 95%) 30%, white, hsl(220, 10%, 95%) 70%) 0 0 / 200% auto;
+	animation: loading 1s infinite linear;
+}
+
+footer {
+	margin-top: 1em;
+	border-top: 1px solid hsl(220 10% 80%);
+	padding-top: 1em;
+	text-align: center;
+}

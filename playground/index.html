@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Rework Utils</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>CSS Almanac Query Playground</h1>
+
+<p>To try out, enter CSS below or a URL, then play around in the console with the <code>AST</code> or <code>ast</code> variables
+	(which is also displayed below).
+<a href="https://projects.verou.me/rework-utils/docs">All util functions</a>, as well as <a href="../parsel">parsel</a>,
+are imported into the global scope so you can play around with them too.</p>
+
+<p>To test a JS query from the <a href="https://github.com/LeaVerou/css-almanac/tree/master/js">css-almanac repo</a>
+	use <code>testQuery(filename)</code>, with or without the <code>.js</code> extension, or select it from the Query menu below.
+
+<form id="cssForm" action="">
+	<fieldset>
+		<legend>CSS</legend>
+
+		<div>
+			<label>
+				<input type="radio" name="cssInput" value="url">
+				URL to stylesheet or website:
+				<input id="cssURL" type="url" value="https://lea.verou.me/wp-content/themes/lv2020/style.css" />
+			</label>
+			<label>
+				<input type="radio" name="cssInput" value="text">
+				Direct input:
+				<textarea id="cssCode"></textarea>
+			</label>
+		</div>
+	</fieldset>
+</form>
+
+<fieldset>
+	<legend>Query</legend>
+	<select id="selectQuery">
+		<option value="00-properties">All properties used</option>
+		<option value="00-functions">All functions used</option>
+		<option value="01-names">Custom property names #1</option>
+		<option value="01-var">Custom property metrics #1</option>
+		<option value="03-custom-prop-animation">Custom property animation #3</option>
+		<option value="04-paint">paint() #4</option>
+		<option value="05-specificity">Specificity #5</option>
+		<option value="08-sizing-model">Sizing model #8</option>
+		<option value="09-prefixes">Prefixes #9</option>
+		<option value="10-shorthands">Shorthands vs longhands #10</option>
+		<option value="11-lengths">Lengths #11</option>
+		<option value="14-layout-methods">Layout methods #14</option>
+		<option value="19-supports">@supports #19</option>
+		<option value="20-gradients">Gradients #20</option>
+		<option value="21-transitions-animations">Transitions & Animations #21</option>
+		<option value="26-property-groups">Properties commonly used together #26</option>
+		<option value="27-specificity-hacks">Specificity Hacks #27</option>
+		<option value="28-calc">calc() #28</option>
+		<option value="29-nonexistent">Nonexistent properties #29</option>
+		<option value="30-mq-features">Media Query features #30</option>
+		<option value="30-media-queries">Media Queries #30</option>
+		<option value="31-selector-parts">Selector parts #31</option>
+		<option value="32-colors">Colors #32</option>
+		<option value="33-grid-template-areas">grid-template-areas #33</option>
+		<option value="34-named-grid-lines">Named grid lines #34</option>
+		<option value="35-gridlike-flexbox">Gridlike flexbox #35</option>
+		<option value="36-multicol">Multiple column layout #36</option>
+		<option value="38-direction">direction CSS property #38</option>
+		<option value="43-logical">Logical properties & values #43</option>
+		<option value="45-mq-properties">Media Query Properties #45</option>
+		<option value="48-important">!important #48</option>
+		<option value="49-global">Global keywords #49</option>
+		<option value="54-repetition">Declaration repetition #54</option>
+	</select>
+	<button id="queryRerun">Re-run</button>
+	<a href="" id="readMore" target="_blank">Read Github Issue</a>
+</fieldset>
+<pre id="queryResults"></pre>
+
+<simple-tabs id="tabs">
+	<simple-tab label="AST">
+		<pre id="astDisplay"></pre>
+	</simple-tab>
+	<simple-tab label="CSS">
+		<pre id="cssCodeDisplay"></pre>
+	</simple-tab>
+</simple-tabs>
+
+<footer>
+	Made by <a href="https://lea.verou.me">Lea Verou</a>
+	&bull; <a href="https://github.com/leaverou/css-almanac">Repo</a>
+	&bull; <a href="https://github.com/leaverou/rework-utils">Repo</a>
+</footer>
+
+<script src="https://cdn.httparchive.org/lib/parse-css.js"></script>
+<script src="https://projects.verou.me/rework-utils/rework-utils.js"></script>
+
+<script src="simple-tabs.js"></script>
+<script type="module" src="playground.js"></script>
+</body>
+</html>
