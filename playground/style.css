@@ -84,3 +84,9 @@ footer {
 	padding-top: 1em;
 	text-align: center;
 }
+
+p.error {
+	padding: .5em 1em;
+	border-radius: .2em;
+	background: hsl(0 50% 94%);
+}
