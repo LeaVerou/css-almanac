@@ -5,13 +5,14 @@ let ret = {
 	animation_names: new Set(),
 	timing_functions: {},
 
-	// to calculate avg, median etc in the SQL. All durations are normalized to ms.
-	durations: {}
+	// to calculate avg, median etc in the SQL. All durations and delays are normalized to ms.
+	durations: {},
+	delays: {}
 };
 
 const easings = /step(s|-start|-end)|ease((-in)?(-out)?)|linear|cubic-bezier/;
 
-function parseDuration(duration) {
+function parseTime(duration) {
 	let num = parseFloat(duration);
 	let unit = duration.endsWith("ms")? "ms" : "s";
 	return unit === "s"? num * 1000 : num;
@@ -34,7 +35,10 @@ walkDeclarations(ast, ({property, value}) => {
 		}
 	}
 	else if (property.endsWith("-duration")) {
-		incrementByKey(ret.durations, parseDuration(value));
+		incrementByKey(ret.durations, parseTime(value));
+	}
+	else if (property.endsWith("-delay")) {
+		incrementByKey(ret.delays, parseTime(value));
 	}
 	else if (property === "transition" || property === "animation") {
 		// Extract property name and timing function
@@ -58,7 +62,15 @@ walkDeclarations(ast, ({property, value}) => {
 
 		// Extract durations
 		for (let times of value.matchAll(/(?<duration>[\d.]+m?s)(\s+(?<delay>[\d.]+m?s))?/g)) {
-			incrementByKey(ret.durations, parseDuration(times.groups.duration));
+			let {duration, delay} = times.groups;
+
+			if (duration) {
+				incrementByKey(ret.durations, parseTime(duration));
+
+				if (delay) {
+					incrementByKey(ret.delays, parseTime(delay));
+				}
+			}
 		}
 	}
 }, {
